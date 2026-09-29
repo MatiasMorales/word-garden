@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Word Garden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f8f1e7; --bg2:#f1e5d5; --card:#fffaf3; --ink:#4a3b32; --muted:#8e7d70; --line:#e8d9c6;
+  --sage:#7fb08a; --sage-d:#557f5e; --on:#fff;
+  --good-bg:#e1f1e0; --good:#4f9a5f; --half-bg:#fdf0cf; --half:#c08a1c; --bad-bg:#fbe3da; --bad:#d06c4f;
+  --tS:58%; --tL:90%;
+  --shadow:0 10px 30px rgba(120,86,56,.12), 0 2px 6px rgba(120,86,56,.06);
+  --r:24px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#262019; --bg2:#30271f; --card:#342b24; --ink:#f3e6d8; --muted:#b8a595; --line:#4a3e34;
+    --sage:#7fae88; --sage-d:#4d7356; --on:#1e1a16; --good-bg:#2c3d2d; --good:#9fd0a8; --half-bg:#443718; --half:#f0c96a; --bad-bg:#4a2e26; --bad:#f0a386;
+    --tS:24%; --tL:25%; --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#262019; --bg2:#30271f; --card:#342b24; --ink:#f3e6d8; --muted:#b8a595; --line:#4a3e34;
+  --sage:#7fae88; --sage-d:#4d7356; --on:#1e1a16; --good-bg:#2c3d2d; --good:#9fd0a8; --half-bg:#443718; --half:#f0c96a; --bad-bg:#4a2e26; --bad:#f0a386;
+  --tS:24%; --tL:25%; --shadow:0 10px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Nunito,system-ui,sans-serif; color:var(--ink); background:var(--bg); min-height:100vh; -webkit-font-smoothing:antialiased}
+#app{max-width:640px; margin:0 auto; padding:20px 16px 40px}
+h1,h2,h3{font-family:Fraunces,Georgia,serif; font-weight:700; margin:0}
+button{font:inherit; color:inherit; cursor:pointer; border:0; background:none; -webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--half); outline-offset:2px}
+.card{background:var(--card); border-radius:var(--r); box-shadow:var(--shadow); padding:24px}
+.tint{background:hsl(var(--h) var(--tS) var(--tL))}
+.tag{display:inline-block; padding:4px 12px; border-radius:10px; font-weight:800}
+.muted{color:var(--muted)}
+.row{display:flex; gap:10px; align-items:center}
+.spacer{flex:1}
+
+.btn{padding:15px 24px; border-radius:16px; font-weight:800; font-size:17px; transition:transform .1s}
+.btn:active{transform:translateY(3px)}
+.btn.primary{background:var(--sage); color:var(--on); box-shadow:0 4px 0 var(--sage-d)}
+.btn.primary:active{box-shadow:0 1px 0 var(--sage-d)}
+.btn.ghost{border:2px solid var(--line); background:var(--card)}
+.btn.big{width:100%; font-size:20px; padding:18px}
+.icon-btn{width:44px; height:44px; border-radius:50%; display:grid; place-items:center; font-size:18px; font-weight:800; background:var(--card); box-shadow:var(--shadow)}
+
+/* home */
+header.top{display:flex; align-items:center; gap:10px; margin-bottom:20px}
+.brand{font-family:Fraunces,serif; font-size:24px; font-weight:700}
+.hero{text-align:center; padding:32px 24px}
+.hero .hi{font-family:Caveat,cursive; font-size:28px; color:var(--bad)}
+.hero h2{font-size:28px; margin:2px 0 6px}
+.hero p{margin:0 0 22px; color:var(--muted)}
+.meter{height:10px; background:var(--line); border-radius:99px; overflow:hidden; margin-top:22px}
+.meter i{display:block; height:100%; background:var(--sage); border-radius:inherit}
+.meter-lbl{font-size:14px; color:var(--muted); margin-top:8px; font-weight:700}
+.section-title{margin:28px 4px 4px; font-size:20px}
+.cats{display:grid; gap:10px; margin-top:12px}
+.cat{display:flex; align-items:center; gap:12px; border-radius:18px; padding:14px 14px 14px 18px}
+.cat b{font-size:17px}
+.cat small{display:block; font-weight:700; opacity:.7}
+.peek{font-weight:800; padding:10px 14px; border-radius:12px; background:rgba(255,255,255,.55)}
+:root[data-theme="dark"] .peek{background:rgba(0,0,0,.25)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .peek{background:rgba(0,0,0,.25)}}
+.stage{font-size:13px; font-weight:800; white-space:nowrap; opacity:.8}
+.bed{border-radius:20px; padding:16px 16px 12px}
+.bed-head{display:flex; align-items:center; gap:10px; margin-bottom:10px}
+.bed-head b{font-size:18px; font-family:Fraunces,serif}
+.bed-head small{font-weight:800; opacity:.7}
+.plants{display:grid; grid-template-columns:repeat(auto-fill,minmax(80px,1fr)); gap:6px}
+.plant{position:relative; display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 4px 8px; border-radius:16px; transition:transform .15s, background .15s}
+.plant:hover{background:rgba(255,255,255,.4); transform:translateY(-2px)}
+.plant .pl{font-size:30px; line-height:1}
+.plant .nm{font-size:13px; font-weight:700; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.plant.due::after{content:"💧"; font-size:13px; position:absolute; top:4px; right:12px}
+.legend{text-align:center; font-size:14px; color:var(--muted); margin:6px 4px 0; line-height:1.7}
+.grow{display:inline-flex; align-items:center; gap:8px; margin-top:10px; font-weight:800; font-size:16px}
+.grow .pl{font-size:26px; display:inline-block; animation:growIn .6s ease}
+@keyframes growIn{0%{transform:scale(.3)}60%{transform:scale(1.35)}100%{transform:scale(1)}}
+
+/* game */
+.gbar{display:flex; align-items:center; gap:12px; margin-bottom:26px}
+.prog{flex:1; height:14px; background:var(--line); border-radius:99px; overflow:hidden}
+.prog i{display:block; height:100%; background:var(--sage); border-radius:inherit; transition:width .4s ease}
+.count{font-weight:800; color:var(--muted); font-size:14px; min-width:44px; text-align:right}
+.pill{display:inline-block; padding:5px 12px; border-radius:99px; font-weight:800; font-size:13px; margin-bottom:12px; background:var(--half-bg); color:var(--half)}
+.prompt{font-family:Fraunces,serif; font-size:clamp(23px,6vw,30px); font-weight:500; line-height:1.3; margin:0 0 6px}
+.prompt b{font-weight:700; color:var(--sage-d)}
+:root[data-theme="dark"] .prompt b{color:var(--good)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .prompt b{color:var(--good)}}
+.quote{display:block; font-style:italic; margin-top:8px}
+.hint{color:var(--muted); font-size:15px; margin:0 0 8px}
+.opts{display:grid; gap:10px; margin-top:20px}
+.opt{display:flex; align-items:flex-start; gap:12px; text-align:left; width:100%; padding:15px 16px; border-radius:16px; border:2px solid var(--line); border-bottom-width:4px; background:var(--card); font-size:17px; line-height:1.4; transition:transform .1s, border-color .15s}
+.opt:not(:disabled):hover{border-color:var(--sage)}
+.opt:not(:disabled):active{transform:translateY(2px)}
+.opt .k{flex:none; width:28px; height:28px; border-radius:9px; display:grid; place-items:center; font-size:14px; font-weight:800; background:var(--bg2); color:var(--muted)}
+.opt .who{display:block; font-size:14px; font-weight:700; margin-top:4px}
+.opt:disabled{cursor:default}
+.opt.dim{opacity:.5}
+.opt.right{background:var(--good-bg); border-color:var(--good)}
+.opt.right .k{background:var(--good); color:var(--on)}
+.opt.right .who{color:var(--good)}
+.opt.half{background:var(--half-bg); border-color:var(--half)}
+.opt.half .k{background:var(--half); color:var(--on)}
+.opt.half .who{color:var(--half)}
+.opt.bad{background:var(--bad-bg); border-color:var(--bad)}
+.opt.bad .k{background:var(--bad); color:var(--on)}
+.opt.bad .who{color:var(--bad)}
+.opt .yours{display:inline-block; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; margin-left:6px; opacity:.75}
+.typein{width:100%; font:inherit; font-size:22px; font-weight:700; padding:16px 18px; border-radius:16px; border:2px solid var(--line); background:var(--bg); color:var(--ink); margin-top:20px}
+.typein:focus{border-color:var(--sage); outline:none}
+.letters{font-family:ui-monospace,Menlo,monospace; letter-spacing:.3em; font-size:20px; color:var(--muted); min-height:30px; margin:12px 4px}
+.game-pad{height:40px}
+
+/* result panel: always in the same place, at the bottom */
+.sheet{position:fixed; left:0; right:0; bottom:0; z-index:10; padding:18px 16px calc(18px + env(safe-area-inset-bottom)); animation:slide .25s ease; box-shadow:0 -8px 30px rgba(0,0,0,.12); max-height:70vh; overflow:auto}
+.sheet .in{max-width:640px; margin:0 auto}
+.sheet.good{background:var(--good-bg)} .sheet.half{background:var(--half-bg)} .sheet.bad{background:var(--bad-bg)}
+.sheet .head{font-family:Fraunces,serif; font-size:24px; font-weight:700}
+.sheet.good .head{color:var(--good)} .sheet.half .head{color:var(--half)} .sheet.bad .head{color:var(--bad)}
+.sheet .answer{margin:8px 0 0; font-size:16px; line-height:1.45}
+.sheet .extra{margin:10px 0 0; font-size:15px; line-height:1.45; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,.6)}
+:root[data-theme="dark"] .sheet .extra{background:rgba(0,0,0,.2)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sheet .extra{background:rgba(0,0,0,.2)}}
+.sheet .btn{margin-top:14px; width:100%; color:var(--on); box-shadow:0 4px 0 rgba(0,0,0,.2)}
+.sheet.good .btn{background:var(--good)} .sheet.half .btn{background:var(--half)} .sheet.bad .btn{background:var(--bad)}
+
+/* summary */
+.center{text-align:center}
+.big-emoji{font-size:60px}
+.stats{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:22px 0}
+.stat{background:var(--bg2); border-radius:16px; padding:14px 6px}
+.stat b{display:block; font-size:26px; font-family:Fraunces,serif}
+.stat span{font-size:12px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.04em}
+.review{text-align:left; display:grid; gap:8px; margin:8px 0 18px}
+.review div{background:var(--bg2); border-radius:14px; padding:12px 14px; line-height:1.4}
+.note{font-family:Caveat,cursive; font-size:27px; line-height:1.25; background:#fff6c9; color:#5a4a2a; padding:22px 22px 16px; border-radius:6px; transform:rotate(-1.5deg); box-shadow:0 8px 20px rgba(120,90,30,.18); margin:18px 6px 24px; position:relative; text-align:left}
+.note::before{content:""; position:absolute; top:-10px; left:50%; width:80px; height:22px; transform:translateX(-50%) rotate(2deg); background:rgba(242,195,189,.85); border-radius:3px}
+.note .sig{text-align:right; font-size:24px; margin-top:6px}
+
+/* settings + modal */
+label.f{display:block; font-weight:800; margin:18px 0 6px}
+.f small{font-weight:600; color:var(--muted); display:block}
+textarea,input[type=text],input[type=number],select{width:100%; font:inherit; padding:12px 14px; border-radius:14px; border:2px solid var(--line); background:var(--bg); color:var(--ink)}
+textarea{min-height:180px; font-family:ui-monospace,Menlo,monospace; font-size:13px; line-height:1.5}
+textarea.notes{font-family:Nunito,sans-serif; font-size:15px; min-height:130px}
+.modal{position:fixed; inset:0; background:rgba(40,28,20,.45); display:grid; place-items:center; padding:16px; z-index:20; animation:fade .2s}
+.modal .card{max-width:520px; width:100%; max-height:85vh; overflow:auto}
+.list-item{padding:12px 0; border-bottom:1px solid var(--line); line-height:1.45}
+.list-item:last-child{border:0}
+.legend-row{display:flex; gap:12px; align-items:flex-start; margin:14px 0; line-height:1.45}
+.legend-row .k{flex:none; width:30px; height:30px; border-radius:9px; display:grid; place-items:center; font-weight:800; color:var(--on)}
+
+.petal{position:fixed; top:-40px; pointer-events:none; z-index:30; animation:fall linear forwards}
+@keyframes fall{to{transform:translate(var(--dx),110vh) rotate(var(--rot))}}
+@keyframes slide{from{transform:translateY(100%)}}
+@keyframes fade{from{opacity:0}}
+@keyframes rise{from{opacity:0; transform:translateY(10px)}}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.enter{animation:rise .3s ease}
+.shake{animation:shake .35s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+
+/* GRE additions */
+.search{width:100%; font:inherit; font-size:16px; padding:14px 16px; border-radius:16px; border:2px solid var(--line); background:var(--card); color:var(--ink); margin-top:10px}
+.search:focus{border-color:var(--sage); outline:none}
+.seg{display:grid; grid-template-columns:1fr 1fr; gap:6px; background:var(--bg2); padding:5px; border-radius:16px; margin-top:12px}
+.seg button{padding:11px; border-radius:12px; font-weight:800; color:var(--muted)}
+.seg button.on{background:var(--card); color:var(--ink); box-shadow:var(--shadow)}
+button.bed{display:block; width:100%; text-align:left; transition:transform .12s}
+button.bed:hover{transform:translateY(-2px)}
+.bed .mini{font-size:17px; line-height:1.35; letter-spacing:1px; word-break:break-all}
+.ex{font-style:italic; margin-top:4px; line-height:1.45}
+.sentence{font-family:Fraunces,serif; font-size:clamp(19px,4.6vw,23px); line-height:1.5; margin:14px 0 4px}
+.blank{display:inline-block; min-width:110px; border-bottom:3px solid var(--sage); margin:0 4px; transform:translateY(-4px)}
+.sheet .answer{margin:8px 0 0; font-size:16px; line-height:1.45}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ============================================================
+   WORDS: generated by build.py from the GRE spreadsheet.
+   cats: [{n: group meaning, s: 'P' (positive) | 'N' (negative)}]
+   words: [{w: word, p: part of speech, e: example, t?: note, c: [group indexes]}]
+   ============================================================ */
+const DATA = __DATA__;
+
+const DEFAULT_NOTES = [
+  "You've got this. Every round counts 💛",
+  "Break time? You've earned a snack.",
+  "Every word you learn is a tiny victory.",
+  "Drink some water, genius 💧",
+  "Your future self is already thanking you.",
+];
+
+const KEY = 'wordgarden.gre.v1';
+const INT = [0, 1, 2, 4, 7, 12];      // days until the next review, per level
+const LEARNED = 3;                    // level at which a word counts as "growing strong"
+const DUE_CAP = 12;                   // max reviews per round
+const PLANTS = ['🌰', '🌱', '🌿', '🪴', '🌷', '🌸'];
+const STAGES = ['seed', 'sprout', 'leafy', 'growing', 'budding', 'in bloom'];
+const SHEETS = { P: '🌞 Positive', N: '🌧️ Negative' };
+const HUES = [140, 18, 265, 42, 195, 335, 95, 8, 220, 300, 170, 60];
+const YAY = ['✓ Correct!', '✓ Correct! 🌸', '✓ Yes! 🌷', '✓ Correct! ✨'];
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rnd = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const today = () => { const d = new Date(); return Math.floor((d - d.getTimezoneOffset() * 60000) / 864e5); };
+const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+
+/* ---------- words ---------- */
+const CATS = DATA.cats.map((c, i) => ({ i, name: c.n, sheet: c.s }));
+const W = DATA.words.map(x => ({ id: x.w.toLowerCase(), word: x.w, pos: x.p, ex: x.e, note: x.t || '', cats: x.c, sheet: CATS[x.c[0]].sheet }));
+const byCat = CATS.map(c => W.filter(w => w.cats.includes(c.i)));
+const hue = ci => HUES[ci % HUES.length];
+const meaningOf = w => w.cats.map(ci => CATS[ci].name).join('  ·  ');
+const sibs = w => W.filter(x => x !== w && x.cats.some(ci => w.cats.includes(ci)));
+const shareCat = (a, b) => a.cats.some(ci => b.cats.includes(ci));
+const pos1 = w => (w.pos || '').split('/')[0].trim();
+
+// find the word inside its example sentence (it may be inflected: concede → conceded)
+function blankify(w) {
+  const parts = w.word.toLowerCase().split('/').map(s => s.trim()).filter(Boolean);
+  const re = /[A-Za-z][A-Za-z'-]*/g;
+  let m;
+  while ((m = re.exec(w.ex))) {
+    const t = m[0].toLowerCase();
+    if (parts.some(p => t.startsWith(p.length > 4 ? p.slice(0, Math.max(4, p.length - 2)) : p)))
+      return { before: w.ex.slice(0, m.index), used: m[0], after: w.ex.slice(m.index + m[0].length) };
+  }
+  return null;
+}
+W.forEach(w => w.blank = w.ex ? blankify(w) : null);
+const exampleHTML = w => w.blank
+  ? `“${esc(w.blank.before)}<b>${esc(w.blank.used)}</b>${esc(w.blank.after)}”`
+  : w.ex ? `“${esc(w.ex)}”` : '';
+
+// alternate positive / negative groups, in spreadsheet order
+const CAT_ORDER = (() => {
+  const p = CATS.filter(c => c.sheet === 'P'), n = CATS.filter(c => c.sheet === 'N'), out = [];
+  for (let i = 0; i < Math.max(p.length, n.length); i++) { p[i] && out.push(p[i].i); n[i] && out.push(n[i].i); }
+  return out;
+})();
+
+/* ---------- state ---------- */
+function fresh() {
+  return { progress: {}, streak: 0, lastDay: null, notesShown: 0, played: false, tab: 'P',
+           settings: { name: '', newPer: 8, sound: true, theme: 'auto', notes: DEFAULT_NOTES.slice() } };
+}
+let S;
+try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+if (!S) S = fresh();
+S.settings = Object.assign(fresh().settings, S.settings);
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+const P = w => (S.progress[w.id] ||= { box: 0, due: 0, seen: 0, right: 0, wrong: 0, last: null });
+const isDue = w => P(w).box > 0 && P(w).due <= today();
+
+function applyTheme() {
+  const t = S.settings.theme;
+  if (t === 'auto') delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = t;
+}
+applyTheme();
+
+/* ---------- soft sounds & petals ---------- */
+let actx;
+function tone(freqs, dur = .18, type = 'sine', vol = .07) {
+  if (!S.settings.sound) return;
+  try {
+    actx ||= new (window.AudioContext || window.webkitAudioContext)();
+    freqs.forEach((f, i) => {
+      const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + i * .09;
+      o.type = type; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(vol, t + .012);
+      g.gain.exponentialRampToValueAtTime(.0001, t + dur + .35);
+      o.connect(g).connect(actx.destination);
+      o.start(t); o.stop(t + dur + .4);
+    });
+  } catch (e) {}
+}
+const sfx = {
+  right: () => tone([659, 880]),
+  half:  () => tone([587, 659], .15, 'triangle', .06),
+  wrong: () => tone([392, 330], .22, 'triangle', .05),
+  done:  () => tone([523, 659, 784, 1047], .25),
+};
+function petals(n = 30) {
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.textContent = rnd(['🌸', '🌷', '🌼', '🍃']);
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.fontSize = (16 + Math.random() * 16) + 'px';
+    p.style.setProperty('--dx', (Math.random() * 160 - 80) + 'px');
+    p.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
+    p.style.animationDuration = (2.5 + Math.random() * 2.5) + 's';
+    p.style.animationDelay = (Math.random() * .8) + 's';
+    document.body.appendChild(p); setTimeout(() => p.remove(), 6000);
+  }
+}
+
+/* ---------- home ---------- */
+function renderHome() {
+  Q = null;
+  const due = W.filter(isDue).length, unseen = W.filter(w => P(w).box === 0).length;
+  const n = Math.min(DUE_CAP, due) + Math.min(unseen, S.settings.newPer) || 10;
+  const bloom = W.filter(w => P(w).box === 5).length, strong = W.filter(w => P(w).box >= LEARNED).length;
+  const planted = W.length - unseen;
+  $('#app').innerHTML = `<div class="enter">
+    <header class="top">
+      <div class="brand">🌷 Word Garden</div><div class="spacer"></div>
+      <button class="icon-btn" id="help" aria-label="How to play">?</button>
+      <button class="icon-btn" id="settings" aria-label="Settings">⚙️</button>
+    </header>
+    <section class="card hero">
+      ${S.settings.name ? `<div class="hi">Hi ${esc(S.settings.name)} 👋</div>` : ''}
+      <h2>${!due && !unseen ? 'All done for today 🎉' : 'Ready to practice?'}</h2>
+      <p>${n} questions · about ${Math.max(2, Math.round(n / 3.5))} min${due ? ` · 💧 ${due} to review` : ''}</p>
+      <button class="btn primary big" id="go">▶  Play</button>
+      <div class="meter"><i style="width:${(planted / W.length * 100).toFixed(1)}%"></i></div>
+      <div class="meter-lbl">🌱 ${planted} of ${W.length} planted · 🪴 ${strong} growing strong · 🌸 ${bloom} in bloom${S.streak ? ` · 🔥 ${S.streak} day${S.streak > 1 ? 's' : ''}` : ''}</div>
+    </section>
+
+    <h3 class="section-title">Look up a word</h3>
+    <input class="search" id="search" type="search" placeholder="🔎  Type a word or a meaning (e.g. copious, abundant)" autocomplete="off">
+    <div id="results"></div>
+
+    <h3 class="section-title">Your garden</h3>
+    <p class="legend" style="text-align:left;margin-top:0">Every word is a seed. Each right answer makes it grow:
+      🌰 → 🌱 → 🌿 → 🪴 → 🌷 → 🌸. Tap a group to see its words.</p>
+    <div class="seg">${['P', 'N'].map(s => `<button data-tab="${s}" class="${S.tab === s ? 'on' : ''}">${SHEETS[s]}</button>`).join('')}</div>
+    <div class="cats" id="beds"></div>
+  </div>`;
+  $('#go').onclick = startSession;
+  $('#help').onclick = helpModal;
+  $('#settings').onclick = renderSettings;
+  $('#search').oninput = e => renderResults(e.target.value);
+  document.querySelectorAll('.seg button').forEach(b => b.onclick = () => {
+    S.tab = b.dataset.tab; save();
+    document.querySelectorAll('.seg button').forEach(x => x.classList.toggle('on', x === b));
+    renderBeds();
+  });
+  renderBeds();
+}
+function renderBeds() {
+  $('#beds').innerHTML = CATS.filter(c => c.sheet === S.tab).map(c => {
+    const ws = byCat[c.i], due = ws.filter(isDue).length;
+    return `<button class="bed tint" style="--h:${hue(c.i)}" data-ci="${c.i}">
+      <div class="bed-head"><b>${esc(c.name)}</b><div class="spacer"></div>
+        <small>${due ? `💧${due} · ` : ''}${ws.filter(w => P(w).box === 5).length}/${ws.length} 🌸</small></div>
+      <div class="mini">${ws.map(w => PLANTS[P(w).box]).join('')}</div></button>`;
+  }).join('');
+  document.querySelectorAll('.bed').forEach(b => b.onclick = () => peekModal(+b.dataset.ci));
+}
+function wordItem(w) {
+  return `<div class="list-item"><div class="row"><b style="font-size:17px">${esc(w.word)}</b><span class="muted">${esc(w.pos)}</span>
+      <div class="spacer"></div><span class="stage">${PLANTS[P(w).box]} ${STAGES[P(w).box]}</span></div>
+    <div><b>${esc(meaningOf(w))}</b></div>
+    ${w.ex ? `<div class="ex">${exampleHTML(w)}</div>` : ''}${w.note ? `<div class="muted">📝 ${esc(w.note)}</div>` : ''}</div>`;
+}
+function renderResults(q) {
+  q = norm(q);
+  if (q.length < 2) return $('#results').innerHTML = '';
+  const hits = W.filter(w => norm(w.word).includes(q) || norm(meaningOf(w)).includes(q))
+    .sort((a, b) => norm(b.word).startsWith(q) - norm(a.word).startsWith(q)).slice(0, 20);
+  $('#results').innerHTML = `<div class="card" style="padding:4px 20px;margin-top:10px">${hits.length ? hits.map(wordItem).join('') : '<p class="muted">No words found.</p>'}</div>`;
+}
+function modal(html) {
+  const m = document.createElement('div');
+  m.className = 'modal';
+  m.innerHTML = `<div class="card enter">${html}<button class="btn primary big" style="margin-top:16px" data-close>OK</button></div>`;
+  m.onclick = e => { if (e.target === m || e.target.hasAttribute('data-close')) m.remove(); };
+  document.body.appendChild(m);
+}
+function helpModal() {
+  modal(`<h2 style="font-size:26px;margin-bottom:4px">How to play</h2>
+    <p class="muted" style="margin:0 0 6px">Press <b>Play</b> and answer the questions. It's fine to guess when you don't know a word: you learn it from the answer.</p>
+    <div class="legend-row"><span class="k" style="background:var(--good)">✓</span><div><b>Correct</b><br><span class="muted">That's the exact answer.</span></div></div>
+    <div class="legend-row"><span class="k" style="background:var(--half)">½</span><div><b>Half right</b><br><span class="muted">Close, but not exact: a synonym from the same group, or a meaning with the right tone (positive/negative) but the wrong group.</span></div></div>
+    <div class="legend-row"><span class="k" style="background:var(--bad)">✗</span><div><b>Wrong</b><br><span class="muted">You'll always see the right answer.</span></div></div>
+    <p class="muted" style="margin:6px 0 0">🌰 Every word starts as a seed. Each ✓ makes it grow one step, all the way to 🌸. A ✗ sends it back to 🌱, and 💧 means it's time to review it.</p>`);
+}
+function peekModal(ci) {
+  const c = CATS[ci];
+  modal(`<span class="tag tint" style="--h:${hue(ci)}">${SHEETS[c.sheet]}</span>
+    <h2 style="margin:8px 0 4px">${esc(c.name)}</h2>
+    ${byCat[ci].map(wordItem).join('')}`);
+}
+
+/* ---------- building a round ---------- */
+let Q = null;
+function pickNew(k) {           // new words come from ~3 groups at a time, alternating between them
+  const open = CAT_ORDER.filter(ci => byCat[ci].some(w => P(w).box === 0)).slice(0, 3);
+  const lists = open.map(ci => shuffle(byCat[ci].filter(w => P(w).box === 0))), out = new Set();
+  while (out.size < k && lists.some(l => l.length)) lists.forEach(l => { if (l.length && out.size < k) out.add(l.shift()); });
+  return [...out];
+}
+function pickKind(w) {
+  const b = P(w).box;
+  let pool = b <= 0 ? ['meaning'] : b === 1 ? ['meaning', 'blank'] : b === 2 ? ['blank', 'word', 'meaning'] : b === 3 ? ['blank', 'type', 'word'] : ['type', 'blank'];
+  if (!w.blank) pool = pool.filter(k => k !== 'blank' && k !== 'type');
+  return rnd(pool.length ? pool : ['meaning', 'word']);
+}
+function buildQueue() {
+  const due = shuffle(W.filter(isDue)).sort((a, b) => P(a).box - P(b).box).slice(0, DUE_CAP);
+  const unseen = pickNew(S.settings.newPer);
+  const q = [];
+  while (due.length || unseen.length) {
+    if (unseen.length) q.push({ w: unseen.shift(), kind: 'meaning' });
+    if (due.length) { const w = due.shift(); q.push({ w, kind: pickKind(w) }); }
+  }
+  if (!q.length)
+    shuffle(W.filter(w => P(w).box > 0)).sort((a, b) => P(a).box - P(b).box).slice(0, 10)
+      .forEach(w => q.push({ w, kind: pickKind(w), practice: true }));
+  return q;
+}
+function startSession() {
+  Q = { queue: buildQueue(), i: 0, combo: 0, right: 0, half: 0, answered: 0, missed: new Map(), grown: new Map(), locked: false };
+  showQuestion();
+}
+
+/* ---------- options ----------
+   Each option is right, half (close but not exact) or wrong. */
+function optionsFor(w, kind) {
+  if (kind === 'meaning') {
+    const right = CATS[rnd(w.cats)];
+    const same = rnd(CATS.filter(c => c.sheet === w.sheet && !w.cats.includes(c.i)));
+    const other = shuffle(CATS.filter(c => c.sheet !== w.sheet)).slice(0, 2);
+    return shuffle([{ c: right, status: 'right' }, { c: same, status: 'half' }, ...other.map(c => ({ c, status: 'wrong' }))])
+      .map(({ c, status }) => ({ label: c.name, status, cat: c, h: hue(c.i),
+        who: status === 'right' ? `Same group: ${sibs(w).filter(x => x.cats.includes(c.i)).slice(0, 5).map(x => x.word).join(', ') || 'only this word'}`
+          : `Words here: ${shuffle(byCat[c.i].slice()).slice(0, 3).map(x => x.word).join(', ')}` }));
+  }
+  if (kind === 'word') {
+    const pool = W.filter(x => x !== w && !shareCat(x, w));
+    const same = rnd(pool.filter(x => x.sheet === w.sheet));
+    const other = shuffle(pool.filter(x => x.sheet !== w.sheet)).slice(0, 2);
+    return shuffle([{ x: w, status: 'right' }, { x: same, status: 'half' }, ...other.map(x => ({ x, status: 'wrong' }))])
+      .map(({ x, status }) => ({ label: x.word, status, owner: x, who: `means: ${meaningOf(x)}` }));
+  }
+  // blank: one synonym from the same group is half right
+  const syn = shuffle(sibs(w).filter(x => norm(x.word) !== norm(w.word)))[0];
+  const others = shuffle(W.filter(x => x !== w && !shareCat(x, w)));
+  const samePos = others.filter(x => pos1(x) === pos1(w));
+  const picks = [{ x: w, status: 'right' }];
+  if (syn) picks.push({ x: syn, status: 'half' });
+  for (const x of [...samePos, ...others]) { if (picks.length >= 4) break; if (!picks.some(p => p.x === x)) picks.push({ x, status: 'wrong' }); }
+  return shuffle(picks).map(({ x, status }) => ({ label: x.word, status, owner: x, who: `means: ${meaningOf(x)}` }));
+}
+
+/* ---------- question screens ---------- */
+function shell(inner) {
+  const pct = Math.round(Q.i / Q.queue.length * 100);
+  $('#app').innerHTML = `
+    <div class="gbar">
+      <button class="icon-btn" id="quit" aria-label="Stop">✕</button>
+      <div class="prog"><i style="width:${pct}%"></i></div>
+      <span class="count">${Q.i + 1}/${Q.queue.length}</span>
+    </div>
+    <div class="enter" id="q">${inner}</div><div class="game-pad"></div>`;
+  $('#quit').onclick = () => Q.answered ? finish() : renderHome();
+  window.scrollTo(0, 0);
+}
+function topHint(c) {
+  if (!S.played) return `<p class="hint">👆 Tap the answer you think is right. It's okay to guess!</p>`;
+  if (c.retry) return `<span class="pill">Try this one again</span>`;
+  if (P(c.w).box === 0) return `<span class="pill">New word · take a guess</span>`;
+  return '';
+}
+const sentenceHTML = w => `<p class="sentence">${esc(w.blank.before)}<span class="blank">&nbsp;</span>${esc(w.blank.after)}</p>
+  <p class="hint">${esc(w.pos)}${norm(w.blank.used) !== norm(w.word.split('/')[0]) ? ' · the word may appear in another form (-ed, -s…)' : ''}</p>`;
+
+function showQuestion() {
+  if (Q.i >= Q.queue.length) return finish();
+  const c = Q.queue[Q.i], w = c.w;
+  if (c.kind === 'type') return typeQuestion(c);
+  const opts = optionsFor(w, c.kind);
+  const right = opts.find(o => o.status === 'right');
+  const prompt = {
+    meaning: `<h1 class="prompt">What does <b>${esc(w.word)}</b> mean?</h1>`,
+    word:    `<h1 class="prompt">Which word means <b>${esc(right.label === w.word ? meaningOf(w) : right.label)}</b>?</h1>`,
+    blank:   `<h1 class="prompt">Which word fills the blank?</h1>${sentenceHTML(w)}`,
+  }[c.kind];
+  shell(`${topHint(c)}${prompt}
+    <div class="opts">${opts.map((o, i) => `<button class="opt" data-i="${i}">
+      <span class="k">${i + 1}</span><span>${o.h != null ? `<span class="tag tint" style="--h:${o.h}">${esc(o.label)}</span>` : esc(o.label)}<span class="who" hidden></span></span>
+    </button>`).join('')}</div>`);
+  document.querySelectorAll('.opt').forEach(b => b.onclick = () => answerMC(c, opts, +b.dataset.i));
+}
+
+function answerMC(c, opts, pick) {
+  if (Q.locked) return;
+  Q.locked = true;
+  document.querySelectorAll('.opt').forEach((b, i) => {
+    const o = opts[i];
+    b.disabled = true;
+    if (o.status === 'wrong' && i !== pick) { b.classList.add('dim'); return; }
+    b.classList.add(o.status === 'wrong' ? 'bad' : o.status);
+    b.querySelector('.k').textContent = o.status === 'right' ? '✓' : o.status === 'half' ? '½' : '✗';
+    const who = b.querySelector('.who');
+    who.hidden = false; who.textContent = o.who;
+    if (i === pick) {
+      who.insertAdjacentHTML('beforebegin', '<span class="yours">← your answer</span>');
+      if (o.status === 'wrong') b.classList.add('shake');
+    }
+  });
+  result(c, opts[pick].status, { chosen: opts[pick], halfOpts: opts.filter(o => o.status === 'half') });
+}
+
+function lev(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+function typeQuestion(c) {
+  const w = c.w, target = w.blank.used;
+  let shown = 1;
+  const letters = () => [...target].map((ch, i) => i < shown ? ch : '_').join('');
+  shell(`${topHint(c)}<h1 class="prompt">Type the missing word</h1>${sentenceHTML(w)}
+    <p class="hint">Meaning: <span class="tag tint" style="--h:${hue(w.cats[0])}">${esc(meaningOf(w))}</span></p>
+    <input class="typein" id="ans" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Type here…">
+    <div class="letters" id="letters">${letters()}</div>
+    <div id="tbtns"><div class="row"><button class="btn ghost" id="hint">Show a letter</button><div class="spacer"></div>
+      <button class="btn primary" id="check">Check</button></div>
+      <p class="hint" style="margin-top:14px"><button id="idk" style="text-decoration:underline;color:var(--muted)">I don't know</button></p></div>`);
+  const inp = $('#ans');
+  setTimeout(() => inp.focus(), 50);
+  $('#hint').onclick = () => { shown = Math.min(shown + 1, target.length - 1); $('#letters').textContent = letters(); c.hinted = true; inp.focus(); };
+  const end = (status, info) => {
+    if (Q.locked) return;
+    Q.locked = true;
+    inp.disabled = true; $('#tbtns').remove();
+    inp.style.borderColor = `var(--${status === 'right' ? 'good' : status})`;
+    result(c, status, info);
+  };
+  $('#idk').onclick = () => end('bad', {});
+  $('#check').onclick = () => {
+    const a = norm(inp.value);
+    if (!a) return inp.focus();
+    const forms = [target, ...w.word.split('/')].map(norm);
+    const dist = Math.min(...forms.map(f => lev(a, f)));
+    if (dist === 0 || (dist === 1 && a.length >= 5)) return end(c.hinted ? 'half' : 'right', { typo: dist > 0, hinted: c.hinted });
+    const sib = sibs(w).find(x => x.word.split('/').some(p => { const n = norm(p); return a === n || (a.length > 4 && a.startsWith(n.slice(0, Math.max(4, n.length - 2)))); }));
+    if (sib) return end('half', { typedSibling: sib });
+    end('bad', { typed: inp.value.trim() });
+  };
+  inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); $('#check')?.click(); } };
+}
+
+/* ---------- grading (Leitner levels) ---------- */
+function grade(c, status) {
+  const w = c.w, p = P(w), t = today(), before = p.box;
+  p.seen++; p.last = t;
+  if (status === 'right') p.right++; else if (status === 'bad') p.wrong++;
+  if (c.retry) { /* already rescheduled when first missed */ }
+  else if (c.practice) { if (status !== 'right') { p.box = 1; p.due = t + 1; } }
+  else if (status === 'right') { p.box = Math.min(5, p.box + 1); p.due = t + INT[p.box]; }
+  else if (status === 'half') { p.box = Math.max(1, p.box); p.due = t + 1; }
+  else { p.box = 1; p.due = t + 1; }
+  Q.answered++;
+  if (status === 'right') { Q.right++; Q.combo++; } else { Q.combo = 0; Q.missed.set(w.id, w); }
+  if (status === 'half') Q.half++;
+  if (status !== 'right' && !c.retry)       // ask again a few questions later
+    Q.queue.splice(Math.min(Q.queue.length, Q.i + 3), 0, { w, kind: w.blank && c.kind !== 'meaning' ? 'blank' : 'meaning', retry: true });
+  if (p.box > before && status === 'right') Q.grown.set(w.id, [Q.grown.has(w.id) ? Q.grown.get(w.id)[0] : before, p.box]);
+  S.played = true;
+  save();
+  return { before, after: p.box };
+}
+
+/* ---------- result panel: always shows the exact answer ---------- */
+function result(c, status, info = {}) {
+  if (status === 'wrong') status = 'bad';
+  const { before, after } = grade(c, status);
+  const w = c.w, o = info.chosen && (info.chosen.owner || info.chosen.cat);
+  const bloomed = after === 5 && before < 5;
+  const same = sibs(w).map(x => x.word);
+  const answer = `<b>${esc(w.word)}</b> <span class="muted">(${esc(w.pos)})</span> means <b>${esc(meaningOf(w))}</b>
+    ${w.ex ? `<div class="ex">${exampleHTML(w)}</div>` : ''}${w.note ? `<div class="muted">📝 ${esc(w.note)}</div>` : ''}
+    ${same.length ? `<div class="muted" style="font-size:14px;margin-top:4px">Same meaning: ${esc(same.slice(0, 6).join(', '))}${same.length > 6 ? ` +${same.length - 6} more` : ''}</div>` : ''}`;
+  const growLine = before === 0 && status !== 'right'
+    ? `<div class="grow"><span class="pl">🌱</span> Seed planted. Get it right next time to make it grow!</div>`
+    : after > before ? `<div class="grow">${PLANTS[before]} → <span class="pl">${PLANTS[after]}</span> ${bloomed ? `${esc(w.word)} is in full bloom!` : `${esc(w.word)} grew!`}</div>`
+    : after < before ? `<div class="grow">${PLANTS[before]} → <span class="pl">${PLANTS[after]}</span> ${esc(w.word)} wilted a little</div>` : '';
+  const tone = x => x.sheet === 'P' ? 'positive' : 'negative';
+  let head, extra = '';
+  if (status === 'right') {
+    head = rnd(YAY) + (Q.combo >= 3 ? `  🔥 ${Q.combo} in a row` : '');
+    const h = (info.halfOpts || [])[0];
+    if (info.typo) extra = `Small typo: it's spelled <b>${esc(w.blank ? w.blank.used : w.word)}</b>.`;
+    else if (h && c.kind === 'blank')
+      extra = `½ <b>There was a half-right option:</b> <b>${esc(h.owner.word)}</b> also means ${esc(meaningOf(h.owner))}, so it's a synonym. The sentence uses <b>${esc(w.word)}</b>.`;
+    else if (h && c.kind === 'meaning')
+      extra = `½ <b>There was a half-right option:</b> “${esc(h.label)}” has the right tone (${tone(w)}), but it's a different meaning.`;
+    else if (h && c.kind === 'word')
+      extra = `½ <b>There was a half-right option:</b> <b>${esc(h.label)}</b> is also a ${tone(w)} word, but it means ${esc(meaningOf(h.owner))}.`;
+    if (bloomed) { sfx.done(); petals(24); } else sfx.right();
+  } else if (status === 'half') {
+    head = '½ Half right';
+    if (info.hinted) extra = `You got it, but with letter hints. Next time try without!`;
+    else if (info.typedSibling) extra = `<b>${esc(info.typedSibling.word)}</b> is a synonym (it also means ${esc(meaningOf(info.typedSibling))}), but the sentence uses <b>${esc(w.word)}</b>.`;
+    else if (c.kind === 'blank') extra = `<b>${esc(o.word)}</b> is a synonym: it also means ${esc(meaningOf(o))}. Close! But the sentence uses <b>${esc(w.word)}</b>.`;
+    else if (c.kind === 'meaning') extra = `“${esc(o.name)}” has the right tone (${tone(w)}), but it's a different meaning.`;
+    else extra = `<b>${esc(o.word)}</b> is also a ${tone(w)} word, but it means ${esc(meaningOf(o))}.`;
+    sfx.half();
+  } else {
+    head = '✗ Not quite';
+    if (info.typed) extra = `You wrote “${esc(info.typed)}”.`;
+    else if (o && c.kind === 'meaning') extra = `You picked “${esc(o.name)}”, which is a ${o.sheet === 'P' ? 'positive' : 'negative'} meaning. <b>${esc(w.word)}</b> is ${tone(w)}.`;
+    else if (o) extra = `You picked <b>${esc(o.word)}</b>, which means ${esc(meaningOf(o))}.`;
+    sfx.wrong();
+  }
+  const again = status !== 'right' && !c.retry ? `<div class="muted" style="font-size:14px;margin-top:8px">This word will come back in a few questions.</div>` : '';
+  const sheet = document.createElement('div');
+  sheet.className = `sheet ${status === 'right' ? 'good' : status}`;
+  sheet.innerHTML = `<div class="in">
+    <div class="head">${head}</div>
+    <div class="answer">${status === 'right' ? '' : '<b>Right answer:</b> '}${answer}</div>
+    ${growLine}
+    ${extra ? `<div class="extra">${extra}</div>` : ''}${again}
+    <button class="btn" id="next">Continue</button></div>`;
+  document.body.appendChild(sheet);
+  $('.game-pad').style.height = (sheet.offsetHeight + 30) + 'px';
+  $('#next').onclick = () => { sheet.remove(); Q.locked = false; Q.i++; showQuestion(); };
+  setTimeout(() => $('#next')?.focus({ preventScroll: true }), 50);
+}
+
+/* ---------- end of round ---------- */
+function finish() {
+  document.querySelector('.sheet')?.remove();
+  const t = today();
+  if (Q.answered && S.lastDay !== t) { S.streak = S.lastDay === t - 1 ? S.streak + 1 : 1; S.lastDay = t; }
+  const notes = S.settings.notes.filter(Boolean);
+  const note = Q.answered && notes.length ? notes[S.notesShown++ % notes.length] : '';
+  save();
+  const acc = Q.answered ? Q.right / Q.answered : 0;
+  const missed = [...Q.missed.values()];
+  $('#app').innerHTML = `<div class="card center enter">
+    <div class="big-emoji">${acc >= .8 ? '🌸' : acc >= .5 ? '🌷' : '🌱'}</div>
+    <h1 style="font-size:30px;margin-top:6px">${acc >= .8 ? 'Amazing round!' : acc >= .5 ? 'Nice work!' : 'Good practice!'}</h1>
+    <p class="muted">${acc < .5 ? 'Mistakes now mean fewer mistakes in the exam.' : 'Keep it up. A little every day is the trick.'}</p>
+    <div class="stats">
+      <div class="stat"><b style="color:var(--good)">${Q.right}</b><span>correct</span></div>
+      <div class="stat"><b style="color:var(--half)">${Q.half}</b><span>half right</span></div>
+      <div class="stat"><b>${Q.grown.size}🌱</b><span>grew</span></div>
+    </div>
+    ${Q.grown.size ? `<div class="muted" style="text-align:left;font-weight:800;font-size:14px">What grew today 🌱</div>
+      <div class="review">${[...Q.grown].map(([id, [a, b]]) => `<div>${PLANTS[a]} → ${PLANTS[b]} &nbsp;<b>${esc(W.find(w => w.id === id).word)}</b></div>`).join('')}</div>` : ''}
+    ${missed.length ? `<div class="muted" style="text-align:left;font-weight:800;font-size:14px">Words to look at again</div>
+      <div class="review">${missed.map(w => `<div><b>${esc(w.word)}</b> = ${esc(meaningOf(w))}${w.ex ? `<div class="ex">${exampleHTML(w)}</div>` : ''}</div>`).join('')}</div>` : ''}
+    ${note ? `<div class="note">${esc(note)}<div class="sig">♥</div></div>` : ''}
+    <div class="row" style="justify-content:center;flex-wrap:wrap">
+      <button class="btn ghost" id="home">Home</button>
+      <button class="btn primary" id="again">Play again</button></div></div>`;
+  $('#home').onclick = renderHome;
+  $('#again').onclick = startSession;
+  if (Q.answered) { sfx.done(); if (acc >= .5) petals(); }
+  Q = null;
+}
+
+/* ---------- settings ---------- */
+function renderSettings() {
+  const st = S.settings;
+  $('#app').innerHTML = `<div class="enter">
+    <header class="top"><button class="icon-btn" id="back" aria-label="Back">←</button><div class="brand">Settings</div></header>
+    <div class="card">
+      <label class="f">Your name <small>Optional. Shown on the home screen.</small></label>
+      <input type="text" id="name" value="${esc(st.name)}" placeholder="optional">
+      <label class="f">New words per round <small>${W.length} words in total. More new words = longer rounds.</small></label>
+      <input type="number" id="newPer" min="1" max="30" value="${st.newPer}">
+      <label class="f">Encouragement notes <small>One per line. One shows up at the end of each round.</small></label>
+      <textarea class="notes" id="notes">${esc(st.notes.join('\n'))}</textarea>
+      <div class="row" style="margin-top:18px">
+        <label class="row" style="font-weight:800"><input type="checkbox" id="sound" ${st.sound ? 'checked' : ''}> Sounds</label>
+        <div class="spacer"></div>
+        <select id="theme" style="width:auto">${['auto', 'light', 'dark'].map(t => `<option ${t === st.theme ? 'selected' : ''}>${t}</option>`).join('')}</select>
+      </div>
+      <div class="row" style="margin-top:24px">
+        <button class="btn ghost" id="reset">Reset progress</button><div class="spacer"></div>
+        <button class="btn primary" id="saveBtn">Save</button></div>
+    </div></div>`;
+  $('#back').onclick = renderHome;
+  $('#reset').onclick = e => {
+    if (e.target.dataset.sure) { S.progress = {}; S.streak = 0; S.lastDay = null; S.played = false; save(); renderHome(); }
+    else { e.target.dataset.sure = 1; e.target.textContent = 'Tap again to confirm'; e.target.style.borderColor = 'var(--bad)'; }
+  };
+  $('#saveBtn').onclick = () => {
+    st.name = $('#name').value.trim();
+    st.newPer = Math.max(1, Math.min(30, +$('#newPer').value || 8));
+    st.notes = $('#notes').value.split('\n').map(s => s.trim()).filter(Boolean);
+    st.sound = $('#sound').checked;
+    st.theme = $('#theme').value;
+    save(); applyTheme(); renderHome();
+  };
+}
+
+/* ---------- keyboard: 1–4 to answer, Enter to continue ---------- */
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input,textarea,select')) return;
+  if (e.key === 'Enter' && $('#next')) { e.preventDefault(); $('#next').click(); return; }
+  const n = parseInt(e.key, 10);
+  if (n >= 1) document.querySelector(`.opt[data-i="${n - 1}"]:not(:disabled)`)?.click();
+});
+
+renderHome();
+</script>
+</body>
+</html>

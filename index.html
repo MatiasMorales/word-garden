@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Word Garden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f8f1e7; --bg2:#f1e5d5; --card:#fffaf3; --ink:#4a3b32; --muted:#8e7d70; --line:#e8d9c6;
+  --sage:#7fb08a; --sage-d:#557f5e; --on:#fff;
+  --good-bg:#e1f1e0; --good:#4f9a5f; --half-bg:#fdf0cf; --half:#c08a1c; --bad-bg:#fbe3da; --bad:#d06c4f;
+  --tS:58%; --tL:90%;
+  --shadow:0 10px 30px rgba(120,86,56,.12), 0 2px 6px rgba(120,86,56,.06);
+  --r:24px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#262019; --bg2:#30271f; --card:#342b24; --ink:#f3e6d8; --muted:#b8a595; --line:#4a3e34;
+    --sage:#7fae88; --sage-d:#4d7356; --on:#1e1a16; --good-bg:#2c3d2d; --good:#9fd0a8; --half-bg:#443718; --half:#f0c96a; --bad-bg:#4a2e26; --bad:#f0a386;
+    --tS:24%; --tL:25%; --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#262019; --bg2:#30271f; --card:#342b24; --ink:#f3e6d8; --muted:#b8a595; --line:#4a3e34;
+  --sage:#7fae88; --sage-d:#4d7356; --on:#1e1a16; --good-bg:#2c3d2d; --good:#9fd0a8; --half-bg:#443718; --half:#f0c96a; --bad-bg:#4a2e26; --bad:#f0a386;
+  --tS:24%; --tL:25%; --shadow:0 10px 30px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Nunito,system-ui,sans-serif; color:var(--ink); background:var(--bg); min-height:100vh; -webkit-font-smoothing:antialiased}
+#app{max-width:640px; margin:0 auto; padding:20px 16px 40px}
+h1,h2,h3{font-family:Fraunces,Georgia,serif; font-weight:700; margin:0}
+button{font:inherit; color:inherit; cursor:pointer; border:0; background:none; -webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--half); outline-offset:2px}
+.card{background:var(--card); border-radius:var(--r); box-shadow:var(--shadow); padding:24px}
+.tint{background:hsl(var(--h) var(--tS) var(--tL))}
+.tag{display:inline-block; padding:4px 12px; border-radius:10px; font-weight:800}
+.muted{color:var(--muted)}
+.row{display:flex; gap:10px; align-items:center}
+.spacer{flex:1}
+
+.btn{padding:15px 24px; border-radius:16px; font-weight:800; font-size:17px; transition:transform .1s}
+.btn:active{transform:translateY(3px)}
+.btn.primary{background:var(--sage); color:var(--on); box-shadow:0 4px 0 var(--sage-d)}
+.btn.primary:active{box-shadow:0 1px 0 var(--sage-d)}
+.btn.ghost{border:2px solid var(--line); background:var(--card)}
+.btn.big{width:100%; font-size:20px; padding:18px}
+.icon-btn{width:44px; height:44px; border-radius:50%; display:grid; place-items:center; font-size:18px; font-weight:800; background:var(--card); box-shadow:var(--shadow)}
+
+/* home */
+header.top{display:flex; align-items:center; gap:10px; margin-bottom:20px}
+.brand{font-family:Fraunces,serif; font-size:24px; font-weight:700}
+.hero{text-align:center; padding:32px 24px}
+.hero .hi{font-family:Caveat,cursive; font-size:28px; color:var(--bad)}
+.hero h2{font-size:28px; margin:2px 0 6px}
+.hero p{margin:0 0 22px; color:var(--muted)}
+.meter{height:10px; background:var(--line); border-radius:99px; overflow:hidden; margin-top:22px}
+.meter i{display:block; height:100%; background:var(--sage); border-radius:inherit}
+.meter-lbl{font-size:14px; color:var(--muted); margin-top:8px; font-weight:700}
+.section-title{margin:28px 4px 4px; font-size:20px}
+.cats{display:grid; gap:10px; margin-top:12px}
+.cat{display:flex; align-items:center; gap:12px; border-radius:18px; padding:14px 14px 14px 18px}
+.cat b{font-size:17px}
+.cat small{display:block; font-weight:700; opacity:.7}
+.peek{font-weight:800; padding:10px 14px; border-radius:12px; background:rgba(255,255,255,.55)}
+:root[data-theme="dark"] .peek{background:rgba(0,0,0,.25)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .peek{background:rgba(0,0,0,.25)}}
+.stage{font-size:13px; font-weight:800; white-space:nowrap; opacity:.8}
+.bed{border-radius:20px; padding:16px 16px 12px}
+.bed-head{display:flex; align-items:center; gap:10px; margin-bottom:10px}
+.bed-head b{font-size:18px; font-family:Fraunces,serif}
+.bed-head small{font-weight:800; opacity:.7}
+.plants{display:grid; grid-template-columns:repeat(auto-fill,minmax(80px,1fr)); gap:6px}
+.plant{position:relative; display:flex; flex-direction:column; align-items:center; gap:2px; padding:10px 4px 8px; border-radius:16px; transition:transform .15s, background .15s}
+.plant:hover{background:rgba(255,255,255,.4); transform:translateY(-2px)}
+.plant .pl{font-size:30px; line-height:1}
+.plant .nm{font-size:13px; font-weight:700; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.plant.due::after{content:"💧"; font-size:13px; position:absolute; top:4px; right:12px}
+.legend{text-align:center; font-size:14px; color:var(--muted); margin:6px 4px 0; line-height:1.7}
+.grow{display:inline-flex; align-items:center; gap:8px; margin-top:10px; font-weight:800; font-size:16px}
+.grow .pl{font-size:26px; display:inline-block; animation:growIn .6s ease}
+@keyframes growIn{0%{transform:scale(.3)}60%{transform:scale(1.35)}100%{transform:scale(1)}}
+
+/* game */
+.gbar{display:flex; align-items:center; gap:12px; margin-bottom:26px}
+.prog{flex:1; height:14px; background:var(--line); border-radius:99px; overflow:hidden}
+.prog i{display:block; height:100%; background:var(--sage); border-radius:inherit; transition:width .4s ease}
+.count{font-weight:800; color:var(--muted); font-size:14px; min-width:44px; text-align:right}
+.pill{display:inline-block; padding:5px 12px; border-radius:99px; font-weight:800; font-size:13px; margin-bottom:12px; background:var(--half-bg); color:var(--half)}
+.prompt{font-family:Fraunces,serif; font-size:clamp(23px,6vw,30px); font-weight:500; line-height:1.3; margin:0 0 6px}
+.prompt b{font-weight:700; color:var(--sage-d)}
+:root[data-theme="dark"] .prompt b{color:var(--good)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .prompt b{color:var(--good)}}
+.quote{display:block; font-style:italic; margin-top:8px}
+.hint{color:var(--muted); font-size:15px; margin:0 0 8px}
+.opts{display:grid; gap:10px; margin-top:20px}
+.opt{display:flex; align-items:flex-start; gap:12px; text-align:left; width:100%; padding:15px 16px; border-radius:16px; border:2px solid var(--line); border-bottom-width:4px; background:var(--card); font-size:17px; line-height:1.4; transition:transform .1s, border-color .15s}
+.opt:not(:disabled):hover{border-color:var(--sage)}
+.opt:not(:disabled):active{transform:translateY(2px)}
+.opt .k{flex:none; width:28px; height:28px; border-radius:9px; display:grid; place-items:center; font-size:14px; font-weight:800; background:var(--bg2); color:var(--muted)}
+.opt .who{display:block; font-size:14px; font-weight:700; margin-top:4px}
+.opt:disabled{cursor:default}
+.opt.dim{opacity:.5}
+.opt.right{background:var(--good-bg); border-color:var(--good)}
+.opt.right .k{background:var(--good); color:var(--on)}
+.opt.right .who{color:var(--good)}
+.opt.half{background:var(--half-bg); border-color:var(--half)}
+.opt.half .k{background:var(--half); color:var(--on)}
+.opt.half .who{color:var(--half)}
+.opt.bad{background:var(--bad-bg); border-color:var(--bad)}
+.opt.bad .k{background:var(--bad); color:var(--on)}
+.opt.bad .who{color:var(--bad)}
+.opt .yours{display:inline-block; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.05em; margin-left:6px; opacity:.75}
+.typein{width:100%; font:inherit; font-size:22px; font-weight:700; padding:16px 18px; border-radius:16px; border:2px solid var(--line); background:var(--bg); color:var(--ink); margin-top:20px}
+.typein:focus{border-color:var(--sage); outline:none}
+.letters{font-family:ui-monospace,Menlo,monospace; letter-spacing:.3em; font-size:20px; color:var(--muted); min-height:30px; margin:12px 4px}
+.game-pad{height:40px}
+
+/* result panel: always in the same place, at the bottom */
+.sheet{position:fixed; left:0; right:0; bottom:0; z-index:10; padding:18px 16px calc(18px + env(safe-area-inset-bottom)); animation:slide .25s ease; box-shadow:0 -8px 30px rgba(0,0,0,.12); max-height:70vh; overflow:auto}
+.sheet .in{max-width:640px; margin:0 auto}
+.sheet.good{background:var(--good-bg)} .sheet.half{background:var(--half-bg)} .sheet.bad{background:var(--bad-bg)}
+.sheet .head{font-family:Fraunces,serif; font-size:24px; font-weight:700}
+.sheet.good .head{color:var(--good)} .sheet.half .head{color:var(--half)} .sheet.bad .head{color:var(--bad)}
+.sheet .answer{margin:8px 0 0; font-size:16px; line-height:1.45}
+.sheet .extra{margin:10px 0 0; font-size:15px; line-height:1.45; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,.6)}
+:root[data-theme="dark"] .sheet .extra{background:rgba(0,0,0,.2)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sheet .extra{background:rgba(0,0,0,.2)}}
+.sheet .btn{margin-top:14px; width:100%; color:var(--on); box-shadow:0 4px 0 rgba(0,0,0,.2)}
+.sheet.good .btn{background:var(--good)} .sheet.half .btn{background:var(--half)} .sheet.bad .btn{background:var(--bad)}
+
+/* summary */
+.center{text-align:center}
+.big-emoji{font-size:60px}
+.stats{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:22px 0}
+.stat{background:var(--bg2); border-radius:16px; padding:14px 6px}
+.stat b{display:block; font-size:26px; font-family:Fraunces,serif}
+.stat span{font-size:12px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.04em}
+.review{text-align:left; display:grid; gap:8px; margin:8px 0 18px}
+.review div{background:var(--bg2); border-radius:14px; padding:12px 14px; line-height:1.4}
+.note{font-family:Caveat,cursive; font-size:27px; line-height:1.25; background:#fff6c9; color:#5a4a2a; padding:22px 22px 16px; border-radius:6px; transform:rotate(-1.5deg); box-shadow:0 8px 20px rgba(120,90,30,.18); margin:18px 6px 24px; position:relative; text-align:left}
+.note::before{content:""; position:absolute; top:-10px; left:50%; width:80px; height:22px; transform:translateX(-50%) rotate(2deg); background:rgba(242,195,189,.85); border-radius:3px}
+.note .sig{text-align:right; font-size:24px; margin-top:6px}
+
+/* settings + modal */
+label.f{display:block; font-weight:800; margin:18px 0 6px}
+.f small{font-weight:600; color:var(--muted); display:block}
+textarea,input[type=text],input[type=number],select{width:100%; font:inherit; padding:12px 14px; border-radius:14px; border:2px solid var(--line); background:var(--bg); color:var(--ink)}
+textarea{min-height:180px; font-family:ui-monospace,Menlo,monospace; font-size:13px; line-height:1.5}
+textarea.notes{font-family:Nunito,sans-serif; font-size:15px; min-height:130px}
+.modal{position:fixed; inset:0; background:rgba(40,28,20,.45); display:grid; place-items:center; padding:16px; z-index:20; animation:fade .2s}
+.modal .card{max-width:520px; width:100%; max-height:85vh; overflow:auto}
+.list-item{padding:12px 0; border-bottom:1px solid var(--line); line-height:1.45}
+.list-item:last-child{border:0}
+.legend-row{display:flex; gap:12px; align-items:flex-start; margin:14px 0; line-height:1.45}
+.legend-row .k{flex:none; width:30px; height:30px; border-radius:9px; display:grid; place-items:center; font-weight:800; color:var(--on)}
+
+.petal{position:fixed; top:-40px; pointer-events:none; z-index:30; animation:fall linear forwards}
+@keyframes fall{to{transform:translate(var(--dx),110vh) rotate(var(--rot))}}
+@keyframes slide{from{transform:translateY(100%)}}
+@keyframes fade{from{opacity:0}}
+@keyframes rise{from{opacity:0; transform:translateY(10px)}}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.enter{animation:rise .3s ease}
+.shake{animation:shake .35s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+
+/* GRE additions */
+.search{width:100%; font:inherit; font-size:16px; padding:14px 16px; border-radius:16px; border:2px solid var(--line); background:var(--card); color:var(--ink); margin-top:10px}
+.search:focus{border-color:var(--sage); outline:none}
+.seg{display:grid; grid-template-columns:1fr 1fr; gap:6px; background:var(--bg2); padding:5px; border-radius:16px; margin-top:12px}
+.seg button{padding:11px; border-radius:12px; font-weight:800; color:var(--muted)}
+.seg button.on{background:var(--card); color:var(--ink); box-shadow:var(--shadow)}
+button.bed{display:block; width:100%; text-align:left; transition:transform .12s}
+button.bed:hover{transform:translateY(-2px)}
+.bed .mini{font-size:17px; line-height:1.35; letter-spacing:1px; word-break:break-all}
+.ex{font-style:italic; margin-top:4px; line-height:1.45}
+.sentence{font-family:Fraunces,serif; font-size:clamp(19px,4.6vw,23px); line-height:1.5; margin:14px 0 4px}
+.blank{display:inline-block; min-width:110px; border-bottom:3px solid var(--sage); margin:0 4px; transform:translateY(-4px)}
+.sheet .answer{margin:8px 0 0; font-size:16px; line-height:1.45}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ============================================================
+   WORDS: generated by build.py from the GRE spreadsheet.
+   cats: [{n: group meaning, s: 'P' (positive) | 'N' (negative)}]
+   words: [{w: word, p: part of speech, e: example, t?: note, c: [group indexes]}]
+   ============================================================ */
+const DATA = {"cats":[{"n":"Abundant","s":"P"},{"n":"Agreement/Consent","s":"P"},{"n":"Adaptable/Flexible","s":"P"},{"n":"Pleasant to hear","s":"P"},{"n":"Thrifty","s":"P"},{"n":"Approve/Allow","s":"P"},{"n":"Assist/Support","s":"P"},{"n":"Bold/Brave","s":"P"},{"n":"Increase/Grow/Spread","s":"P"},{"n":"Self-discipline/Ways of life","s":"P"},{"n":"Calm/Serene","s":"P"},{"n":"Soothe/Satisfy","s":"P"},{"n":"Walking/Movement","s":"P"},{"n":"Combine/Merge","s":"P"},{"n":"Beginning/Growth","s":"P"},{"n":"Understand","s":"P"},{"n":"Confirm/Verify","s":"P"},{"n":"Curious/Interested","s":"P"},{"n":"Determination/Firmness","s":"P"},{"n":"Diligent/Meticulous","s":"P"},{"n":"Diverse/Mixed","s":"P"},{"n":"Praise/Acclaim","s":"P"},{"n":"Speculate/Guess","s":"P"},{"n":"Expert/Connoisseur","s":"P"},{"n":"Family/Kinship","s":"P"},{"n":"Famous/Prominent","s":"P"},{"n":"Easy to understand","s":"P"},{"n":"Generous/Kind","s":"P"},{"n":"Funny/Humor","s":"P"},{"n":"Large/Significant","s":"P"},{"n":"Equality/Impartiality","s":"P"},{"n":"Independent","s":"P"},{"n":"Intelligent/Learned","s":"P"},{"n":"Investigate/Verify","s":"P"},{"n":"Necessary/Relevant","s":"P"},{"n":"Neutral/Connectors","s":"P"},{"n":"New/Original","s":"P"},{"n":"Optimistic","s":"P"},{"n":"Forgive","s":"P"},{"n":"Pleasure/Enjoyment","s":"P"},{"n":"Predict","s":"P"},{"n":"Practical/Sensible","s":"P"},{"n":"Reduce/Relieve","s":"P"},{"n":"Wisdom/Sayings","s":"P"},{"n":"Healthy/Beneficial","s":"P"},{"n":"Sociable","s":"P"},{"n":"Luck/Favorable","s":"P"},{"n":"Overcome/Surpass","s":"P"},{"n":"Substitute/Replacement","s":"P"},{"n":"Time/Order/Duration","s":"P"},{"n":"Uniform/Similar","s":"P"},{"n":"Truth/Sincerity","s":"P"},{"n":"Boring/Ordinary","s":"N"},{"n":"Acting hastily","s":"N"},{"n":"Outdated/Obsolete","s":"N"},{"n":"Shame","s":"N"},{"n":"Gaps/Openings","s":"N"},{"n":"Sudden mood change","s":"N"},{"n":"Greedy","s":"N"},{"n":"Collapse/Failure","s":"N"},{"n":"Complex/Intricate","s":"N"},{"n":"Brief communication","s":"N"},{"n":"Criticize","s":"N"},{"n":"Cruel/Callous","s":"N"},{"n":"Harmful","s":"N"},{"n":"Weaken","s":"N"},{"n":"Wasteful","s":"N"},{"n":"Disagree/Oppose","s":"N"},{"n":"Careless","s":"N"},{"n":"Dictatorial/Authoritarian","s":"N"},{"n":"Hard to understand","s":"N"},{"n":"Doubtful/Skeptical","s":"N"},{"n":"Ephemeral/Temporary","s":"N"},{"n":"Sickly/Unhealthy","s":"N"},{"n":"Scarce","s":"N"},{"n":"Fake/Imitation","s":"N"},{"n":"Rude/Verbose","s":"N"},{"n":"Hostile","s":"N"},{"n":"Indecisive/Ambiguous","s":"N"},{"n":"Indifferent/Apathetic","s":"N"},{"n":"Insincere","s":"N"},{"n":"Unsociable","s":"N"},{"n":"Unusual/Anomalous","s":"N"},{"n":"Irrelevant","s":"N"},{"n":"Bad mood","s":"N"},{"n":"Bad reputation","s":"N"},{"n":"Lie/Deception","s":"N"},{"n":"Scathing/Caustic","s":"N"},{"n":"Death/Mourning","s":"N"},{"n":"Obedient/Submissive","s":"N"},{"n":"Hidden/Secret","s":"N"},{"n":"Hatred","s":"N"},{"n":"Bias/Favoritism","s":"N"},{"n":"Terse/Quiet","s":"N"},{"n":"Small/Insignificant","s":"N"},{"n":"Lazy","s":"N"},{"n":"Poverty","s":"N"},{"n":"Impractical/Naive","s":"N"},{"n":"Postpone","s":"N"},{"n":"Prevent/Obstruct","s":"N"},{"n":"Beginner/Inexperienced","s":"N"},{"n":"Prohibit","s":"N"},{"n":"Provoke/Instigate","s":"N"},{"n":"Scold/Annoy","s":"N"},{"n":"Give up/Yield","s":"N"},{"n":"Repugnant/Offensive","s":"N"},{"n":"Withdrawal/Abandonment","s":"N"},{"n":"Separate/Scatter","s":"N"},{"n":"Aimless","s":"N"},{"n":"Unpleasant sound","s":"N"},{"n":"Stubborn/Inflexible","s":"N"},{"n":"Timidity/Cowardice","s":"N"},{"n":"Sadness/Grief","s":"N"},{"n":"Waver/Hesitate","s":"N"},{"n":"Wander/Digress","s":"N"},{"n":"Vice/Debauchery","s":"N"}],"words":[{"w":"copious","p":"adj","e":"She took copious notes during the lecture.","c":[0]},{"w":"profuse","p":"adj","e":"She offered profuse apologies for the mistake.","c":[0]},{"w":"replete","p":"adj","e":"The museum is replete with rare artifacts.","c":[0]},{"w":"rife","p":"adj","e":"The report was rife with errors.","c":[0]},{"w":"saturate","p":"v","e":"The market is already saturated with similar products.","c":[0]},{"w":"slew","p":"n","e":"The company faced a slew of lawsuits.","c":[0]},{"w":"spate","p":"n","e":"The city saw a spate of burglaries last month.","c":[0]},{"w":"surfeit","p":"n","e":"There was a surfeit of applicants for the single position.","c":[0]},{"w":"ubiquitous","p":"adj","e":"Smartphones have become ubiquitous in daily life.","c":[0]},{"w":"adhere","p":"v","e":"Employees must adhere to the safety guidelines.","c":[1]},{"w":"concede","p":"v","e":"She conceded that the plan had serious flaws.","c":[1]},{"w":"concur","p":"v","e":"The other judges concurred with the majority ruling.","c":[1]},{"w":"malleable","p":"adj","e":"Gold is a highly malleable metal.","c":[2]},{"w":"plastic","p":"adj","e":"Young minds are remarkably plastic and open to new ideas.","c":[2]},{"w":"euphonious","p":"adj","e":"The choir's euphonious harmony filled the hall.","c":[3]},{"w":"harmonious","p":"adj","e":"The neighbors maintained a harmonious relationship for years.","c":[3]},{"w":"melodious","p":"adj","e":"Her melodious voice captivated the entire audience.","c":[3]},{"w":"sonorous","p":"adj","e":"His sonorous voice filled the concert hall.","c":[3]},{"w":"frugal","p":"adj","e":"Her frugal habits allowed her to save a lot each month.","c":[4]},{"w":"condone","p":"v","e":"The school does not condone any form of bullying.","c":[5]},{"w":"countenance","p":"v/n","e":"The board refused to countenance such reckless spending.","c":[5,6]},{"w":"sanction","p":"v/n","e":"","c":[5]},{"w":"abet","p":"v","e":"The lawyer was accused of aiding and abetting the fraud.","c":[6]},{"w":"advocate","p":"n/v","e":"She advocates for stricter pollution controls.","c":[6]},{"w":"ancillary","p":"adj","e":"The main report was supported by several ancillary documents.","c":[6]},{"w":"bolster","p":"v","e":"New evidence bolstered the prosecution's case.","c":[6]},{"w":"buffer","p":"n/v","e":"Savings act as a buffer against unexpected expenses.","c":[6]},{"w":"buttress","p":"v/n","e":"New data buttressed the researcher's original hypothesis.","c":[6]},{"w":"confer","p":"v","e":"The university conferred an honorary degree on the scientist.","c":[6]},{"w":"espouse","p":"v","e":"The senator has long espoused environmental reform.","c":[6]},{"w":"exponent","p":"n","e":"She is a leading exponent of renewable energy.","c":[6]},{"w":"facilitate","p":"v","e":"The new software facilitates faster communication.","c":[6]},{"w":"haven","p":"n","e":"The shelter became a haven for stray animals.","c":[6],"t":"safe"},{"w":"mainstay","p":"n","e":"Rice is the mainstay of the local diet.","c":[6],"t":"pillar"},{"w":"proponent","p":"n","e":"She is a leading proponent of renewable energy.","c":[6]},{"w":"remedial","p":"adj","e":"The students took remedial classes over the summer.","c":[6]},{"w":"solicitous","p":"adj","e":"The nurse was solicitous toward every patient.","c":[6]},{"w":"stalwart","p":"adj/n","e":"He remained a stalwart supporter of the team through every loss.","c":[6],"t":"loyal"},{"w":"sustenance","p":"n","e":"The travelers relied on dried fruit for sustenance.","c":[6]},{"w":"audacious","p":"adj","e":"The company launched an audacious plan to expand overseas.","c":[7]},{"w":"courageous","p":"adj","e":"Her courageous decision to speak out changed the policy.","c":[7]},{"w":"dauntless","p":"adj","e":"The dauntless explorer pressed on despite the storm.","c":[7]},{"w":"hardy","p":"adj","e":"Only the hardiest plants survive the harsh winter.","c":[7]},{"w":"intrepid","p":"adj","e":"The intrepid explorer crossed the desert alone.","c":[7]},{"w":"aggrandize","p":"v","e":"He used the merger to aggrandize his own influence.","c":[8,21]},{"w":"augment","p":"v","e":"The team augmented its staff to handle the new project.","c":[8]},{"w":"catalyst","p":"n","e":"The scandal was a catalyst for major reforms.","c":[8],"t":"something that causes something else to change"},{"w":"crescendo","p":"n","e":"The music built to a thunderous crescendo.","c":[8]},{"w":"disseminate","p":"v","e":"The agency disseminates health guidelines to the public.","c":[8],"t":"to spread"},{"w":"elevate","p":"v","e":"The award elevated her standing in the field.","c":[8]},{"w":"enhance","p":"v","e":"New lighting enhanced the room's atmosphere.","c":[8]},{"w":"permeate","p":"v","e":"A sense of optimism permeated the office after the deal closed.","c":[8],"t":"to soak through"},{"w":"pervasive","p":"adj","e":"Social media has become pervasive in modern life.","c":[8],"t":"widespread"},{"w":"proliferate","p":"v","e":"Online scams have proliferated in recent years.","c":[8]},{"w":"reap","p":"v","e":"She reaped the benefits of years of hard work.","c":[8],"t":"to harvest"},{"w":"abnegate","p":"v","e":"The monk chose to abnegate all worldly pleasures.","c":[9]},{"w":"abstain","p":"v","e":"Two senators chose to abstain from the vote.","c":[9]},{"w":"ascetic","p":"adj/n","e":"The monk led an ascetic life in the mountains.","c":[9]},{"w":"austere","p":"adj","e":"The monastery's austere rooms had only a bed and desk.","c":[9]},{"w":"modest","p":"adj","e":"Despite his success, he remained modest.","c":[9]},{"w":"spartan","p":"adj","e":"The soldiers lived in spartan conditions.","c":[9]},{"w":"stoic","p":"adj/n","e":"She remained stoic even as the news devastated her.","c":[9]},{"w":"temperance","p":"n","e":"The movement promoted temperance in drinking habits.","c":[9],"t":"abstaining from alcohol"},{"w":"temperate","p":"adj","e":"The region enjoys a temperate climate year-round.","c":[9],"t":"calm and controlled"},{"w":"detached","p":"adj","e":"The surgeon remained detached during the difficult procedure.","c":[10]},{"w":"placid","p":"adj","e":"The lake was placid on that windless morning.","c":[10]},{"w":"stolid","p":"adj","e":"His stolid expression gave nothing away.","c":[10],"t":"dull"},{"w":"ameliorate","p":"v","e":"New policies were introduced to ameliorate poverty in the region.","c":[11],"t":"make better"},{"w":"appease","p":"v","e":"The manager offered a refund to appease the angry customer.","c":[11],"t":"(more about giving in)"},{"w":"assuage","p":"v","e":"Her apology helped assuage his anger.","c":[11],"t":"to soothe a bad feeling"},{"w":"conciliatory","p":"adj","e":"He offered a conciliatory gesture after the argument.","c":[11]},{"w":"console","p":"v","e":"She tried to console her friend after the loss.","c":[11]},{"w":"lull","p":"v/n","e":"The gentle music lulled the baby to sleep.","c":[11,56]},{"w":"mitigate","p":"v","e":"New regulations aim to mitigate air pollution.","c":[11,42]},{"w":"mollify","p":"v","e":"The manager tried to mollify the upset customer.","c":[11]},{"w":"placate","p":"v","e":"Management offered a bonus to placate the striking workers.","c":[11],"t":"to pacify"},{"w":"propitiate","p":"v","e":"They offered gifts to propitiate the angry chief.","c":[11]},{"w":"satiate","p":"v","e":"The large meal satiated his hunger.","c":[11]},{"w":"slake","p":"v","e":"A cold glass of water slaked his thirst instantly.","c":[11]},{"w":"soothe","p":"v","e":"The lullaby helped soothe the crying baby.","c":[11]},{"w":"ambulatory","p":"adj","e":"The patient was ambulatory just two days after surgery.","c":[12]},{"w":"itinerant","p":"adj/n","e":"The itinerant preacher traveled from town to town.","c":[12]},{"w":"peripatetic","p":"adj","e":"Her peripatetic career took her to a new city every year.","c":[12]},{"w":"aggregate","p":"v/n/adj","e":"Analysts aggregate sales data from every region.","c":[13]},{"w":"coalesce","p":"v","e":"The small protests coalesced into a national movement.","c":[13]},{"w":"consolidate","p":"v","e":"The company consolidated its offices into one location.","c":[13]},{"w":"converge","p":"v","e":"Several rivers converge near the city center.","c":[13]},{"w":"incorporate","p":"v","e":"The new design incorporates several safety features.","c":[13]},{"w":"burgeon","p":"v","e":"The city's tech industry began to burgeon in the last decade.","c":[14]},{"w":"burgeoning","p":"adj","e":"The city's burgeoning tech industry attracted young talent.","c":[14]},{"w":"engender","p":"v","e":"The new policy engendered widespread resentment.","c":[14]},{"w":"inchoate","p":"adj","e":"The plan was still inchoate and needed more detail.","c":[14],"t":"new"},{"w":"incipient","p":"adj","e":"Doctors caught the incipient signs of the disease early.","c":[14]},{"w":"metamorphosis","p":"n","e":"The startup underwent a remarkable metamorphosis into a global brand.","c":[14]},{"w":"nascent","p":"adj","e":"The nascent industry attracted a wave of new investors.","c":[14]},{"w":"prologue","p":"n","e":"The prologue sets up the novel's central conflict.","c":[14]},{"w":"fathom","p":"v","e":"I couldn't fathom why she left so suddenly.","c":[15]},{"w":"corroborate","p":"v","e":"New witnesses corroborated the victim's account.","c":[16,33]},{"w":"document","p":"v","e":"Researchers documented every stage of the experiment.","c":[16]},{"w":"log","p":"v/n","e":"The pilot logged every detail of the flight.","c":[16]},{"w":"substantiate","p":"v","e":"He couldn't substantiate his accusations against the company.","c":[16,33]},{"w":"avid","p":"adj","e":"He is an avid reader of science fiction.","c":[17]},{"w":"penchant","p":"n","e":"She has a penchant for spicy food.","c":[17]},{"w":"predisposed","p":"adj","e":"Some people are genetically predisposed to certain illnesses.","c":[17]},{"w":"activism","p":"n","e":"Her activism helped pass new environmental laws.","c":[18]},{"w":"alacrity","p":"n","e":"She accepted the challenge with alacrity.","c":[18]},{"w":"clinch","p":"v","e":"The late goal clinched the championship for the team.","c":[18]},{"w":"ingrained","p":"adj","e":"Punctuality was deeply ingrained in his character.","c":[18]},{"w":"orthodox","p":"adj","e":"He preferred orthodox medical treatments over alternatives.","c":[18]},{"w":"presumptive","p":"adj","e":"He became the presumptive nominee after winning key primaries.","c":[18]},{"w":"resolution","p":"n","e":"The board reached a resolution after hours of debate.","c":[18]},{"w":"resolve","p":"v/n","e":"Her resolve to finish the marathon never wavered.","c":[18]},{"w":"sacrosanct","p":"adj","e":"Family dinner time is sacrosanct in their household.","c":[18]},{"w":"spearhead","p":"v","e":"She spearheaded the company's expansion into Asia.","c":[18]},{"w":"warranted","p":"adj","e":"Given the risk, extra caution was warranted.","c":[18]},{"w":"zeal","p":"n","e":"She pursued the project with remarkable zeal.","c":[18]},{"w":"exacting","p":"adj","e":"Her exacting standards pushed the team to improve.","c":[19]},{"w":"exhaustive","p":"adj","e":"The committee conducted an exhaustive review of the policy.","c":[19]},{"w":"meticulous","p":"adj","e":"She is meticulous about keeping accurate records.","c":[19]},{"w":"nuance","p":"n","e":"The translator captured every nuance of the original text.","c":[19]},{"w":"sedulous","p":"adj","e":"Her sedulous attention to detail impressed her boss.","c":[19]},{"w":"discrete","p":"adj","e":"The data were organized into several discrete categories.","c":[20]},{"w":"eclectic","p":"adj","e":"Her music taste is wonderfully eclectic.","c":[20]},{"w":"heterogeneous","p":"adj","e":"The class had a heterogeneous mix of skill levels.","c":[20]},{"w":"hodgepodge","p":"n","e":"The menu was a hodgepodge of unrelated cuisines.","c":[20]},{"w":"motley","p":"adj","e":"A motley crew of volunteers assembled for the cleanup.","c":[20]},{"w":"spectrum","p":"n","e":"Opinions on the issue span the entire political spectrum.","c":[20]},{"w":"acclaim","p":"v/n","e":"The film received critical acclaim at the festival.","c":[21]},{"w":"accolade","p":"n","e":"She received numerous accolades for her research.","c":[21]},{"w":"encomium","p":"n","e":"The retiring president received an encomium from the board.","c":[21]},{"w":"estimable","p":"adj","e":"He had an estimable reputation among his peers.","c":[21]},{"w":"eulogize","p":"v","e":"Friends gathered to eulogize their fallen colleague.","c":[21]},{"w":"eulogy","p":"n","e":"His daughter delivered a moving eulogy.","c":[21]},{"w":"extol","p":"v","e":"Critics extolled the film's stunning cinematography.","c":[21]},{"w":"fawn","p":"v","e":"The assistant would fawn over every decision the boss made.","c":[21]},{"w":"kudos","p":"n","e":"She received kudos for her outstanding presentation.","c":[21]},{"w":"laud/laudatory","p":"v/adj","e":"Reviewers lauded the novel for its rich characters.","c":[21]},{"w":"laudable","p":"adj","e":"Her efforts to help the community are laudable.","c":[21]},{"w":"reverent","p":"adj","e":"The crowd fell into a reverent silence.","c":[21]},{"w":"venerate","p":"v","e":"The community venerates its founding elders.","c":[21]},{"w":"venerate/veneration","p":"v/n","e":"The community venerates the founder of the temple.","c":[21]},{"w":"divine","p":"v/adj","e":"She divined his intentions before he said a word.","c":[22]},{"w":"extrapolate","p":"v","e":"Scientists extrapolated future trends from the current data.","c":[22]},{"w":"speculate","p":"v","e":"Analysts speculated about the reasons for the merger.","c":[22]},{"w":"surmise","p":"v","e":"From her expression, I surmised she was upset.","c":[22]},{"w":"connoisseur","p":"n","e":"He is a connoisseur of fine wine.","c":[23]},{"w":"conversant","p":"adj","e":"She is conversant with several programming languages.","c":[23]},{"w":"finesse","p":"n/v","e":"She handled the negotiation with great finesse.","c":[23]},{"w":"conjugal","p":"adj","e":"They exchanged conjugal vows in a small ceremony.","c":[24]},{"w":"consanguine","p":"adj","e":"The two families are consanguine, sharing a common ancestor.","c":[24]},{"w":"distaff","p":"n/adj","e":"The novel focuses on the distaff side of the royal family.","c":[24]},{"w":"endogamous","p":"adj","e":"The tribe practiced an endogamous marriage system.","c":[24]},{"w":"filial","p":"adj","e":"He showed great filial devotion by caring for his aging parents.","c":[24]},{"w":"progenitor","p":"n","e":"He is considered the progenitor of modern jazz.","c":[24]},{"w":"scion","p":"n","e":"She is the scion of a wealthy banking family.","c":[24]},{"w":"acme","p":"n","e":"The concert marked the acme of her career.","c":[25]},{"w":"culminate","p":"v","e":"Years of research culminated in a groundbreaking discovery.","c":[25]},{"w":"eminent","p":"adj","e":"An eminent scientist led the research team.","c":[25]},{"w":"landmark","p":"n/adj","e":"The ruling was a landmark decision for civil rights.","c":[25]},{"w":"paradigm","p":"n","e":"The discovery created a new paradigm in physics.","c":[25]},{"w":"standing","p":"n/adj","e":"His standing in the community grew after the donation.","c":[25]},{"w":"zenith","p":"n","e":"The empire reached its zenith in the second century.","c":[25]},{"w":"articulate","p":"adj/v","e":"She gave an articulate explanation of the policy.","c":[26]},{"w":"cogent","p":"adj","e":"She made a cogent argument for the new policy.","c":[26]},{"w":"delineate","p":"v","e":"The contract delineates each party's responsibilities.","c":[26]},{"w":"distill","p":"v","e":"The report distills years of research into a few key points.","c":[26]},{"w":"eloquent","p":"adj","e":"She gave an eloquent speech at the ceremony.","c":[26]},{"w":"evident","p":"adj","e":"It was evident from her expression that she disagreed.","c":[26]},{"w":"explicit","p":"adj","e":"The instructions were explicit about the safety procedures.","c":[26]},{"w":"gist","p":"n","e":"I only caught the gist of the conversation.","c":[26]},{"w":"intelligible","p":"adj","e":"His accent made the speech barely intelligible.","c":[26]},{"w":"limpid","p":"adj","e":"The limpid stream revealed every pebble on its bed.","c":[26]},{"w":"lucid","p":"adj","e":"She gave a lucid explanation of the complex theory.","c":[26]},{"w":"manifest","p":"adj/v","e":"Her disappointment was manifest in her downcast expression.","c":[26]},{"w":"overt","p":"adj","e":"There was no overt sign of the conflict brewing beneath the surface.","c":[26]},{"w":"palpable","p":"adj","e":"The tension in the room was palpable.","c":[26]},{"w":"patent","p":"adj/n","e":"His dislike for the plan was patent to everyone in the room.","c":[26]},{"w":"pellucid","p":"adj","e":"Her pellucid prose made the complex topic easy to follow.","c":[26]},{"w":"pith","p":"n","e":"Get to the pith of the argument, please.","c":[26]},{"w":"pronounced","p":"adj","e":"There was a pronounced difference between the two designs.","c":[26]},{"w":"stark","p":"adj","e":"There was a stark contrast between the two neighborhoods.","c":[26]},{"w":"underscore","p":"v","e":"The report underscores the need for reform.","c":[26]},{"w":"unequivocal","p":"adj","e":"She gave an unequivocal denial of the accusations.","c":[26]},{"w":"altruistic","p":"adj","e":"Her altruistic donation helped fund the entire clinic.","c":[27]},{"w":"beneficent","p":"adj","e":"The foundation is known for its beneficent works in the community.","c":[27]},{"w":"clement","p":"adj","e":"The judge was known for being clement toward first-time offenders.","c":[27]},{"w":"largess","p":"n","e":"The wealthy donor was known for his largess to local charities.","c":[27]},{"w":"liberal","p":"adj","e":"She took a liberal approach to interpreting the rules.","c":[27]},{"w":"magnanimous","p":"adj","e":"The champion was magnanimous in victory, praising her rival.","c":[27]},{"w":"munificent","p":"adj","e":"The munificent donation funded the entire new wing.","c":[27]},{"w":"philanthropic","p":"adj","e":"The billionaire's philanthropic efforts funded several hospitals.","c":[27]},{"w":"philanthropy","p":"n","e":"Her philanthropy funded several new schools.","c":[27]},{"w":"unstinting","p":"adj","e":"Her unstinting generosity supported the entire shelter.","c":[27]},{"w":"chortle","p":"v/n","e":"He let out a chortle at the clever pun.","c":[28]},{"w":"droll","p":"adj","e":"His droll commentary kept the audience laughing.","c":[28]},{"w":"facetious","p":"adj","e":"His facetious comments annoyed the committee.","c":[28]},{"w":"flippant","p":"adj","e":"Her flippant response annoyed the interviewer.","c":[28]},{"w":"jocular","p":"adj","e":"His jocular tone lightened the tense meeting.","c":[28]},{"w":"levity","p":"n","e":"He used levity to ease the tension in the room.","c":[28]},{"w":"ludicrous","p":"adj","e":"The idea of building a bridge overnight was ludicrous.","c":[28]},{"w":"raillery","p":"n","e":"The friends exchanged good-natured raillery all evening.","c":[28]},{"w":"riposte","p":"n/v","e":"Her quick riposte silenced the heckler.","c":[28]},{"w":"simper","p":"v/n","e":"She simpered nervously while waiting for the verdict.","c":[28]},{"w":"sportive","p":"adj","e":"The sportive puppy chased its tail for hours.","c":[28]},{"w":"whimsical","p":"adj","e":"The children's book has a whimsical, dreamlike quality.","c":[28]},{"w":"appreciable","p":"adj","e":"There was an appreciable improvement in her grades.","c":[29]},{"w":"arduous","p":"adj","e":"The climb up the mountain was long and arduous.","c":[29]},{"w":"egregious","p":"adj","e":"The report revealed egregious violations of safety codes.","c":[29]},{"w":"onerous","p":"adj","e":"The new regulations placed an onerous burden on small businesses.","c":[29]},{"w":"prodigious","p":"adj","e":"The young pianist showed prodigious talent.","c":[29]},{"w":"profound","p":"adj","e":"The book had a profound effect on her worldview.","c":[29]},{"w":"torrid","p":"adj","e":"They endured a torrid summer with no rain.","c":[29]},{"w":"disinterested","p":"adj","e":"A disinterested mediator helped resolve the dispute.","c":[30]},{"w":"dispassionate","p":"adj","e":"The judge gave a dispassionate assessment of the evidence.","c":[30]},{"w":"egalitarian","p":"adj","e":"The community values an egalitarian approach to decision-making.","c":[30]},{"w":"equitable","p":"adj","e":"The judge sought an equitable resolution for both sides.","c":[30]},{"w":"equity","p":"n","e":"The judge ruled based on principles of equity.","c":[30]},{"w":"impartial","p":"adj","e":"The referee remained impartial throughout the match.","c":[30]},{"w":"objective","p":"adj/n","e":"The referee tried to remain objective throughout the game.","c":[30]},{"w":"tantamount","p":"adj","e":"Her silence was tantamount to an admission of guilt.","c":[30]},{"w":"autonomous","p":"adj","e":"The region became an autonomous province after the treaty.","c":[31]},{"w":"maverick","p":"n/adj","e":"The maverick CEO ignored industry norms.","c":[31]},{"w":"astute","p":"adj","e":"Her astute observation revealed a flaw in the plan.","c":[32]},{"w":"canny","p":"adj","e":"His canny investments made him wealthy by thirty.","c":[32]},{"w":"discerning","p":"adj","e":"A discerning reader will notice the subtle irony.","c":[32]},{"w":"discriminating","p":"adj","e":"The chef has a discriminating palate.","c":[32]},{"w":"erudite","p":"adj","e":"The professor's erudite lecture impressed the audience.","c":[32]},{"w":"keen","p":"adj","e":"He has a keen interest in ancient history.","c":[32]},{"w":"perspicacious","p":"adj","e":"Her perspicacious analysis identified the flaw immediately.","c":[32]},{"w":"sagacious","p":"adj","e":"The sagacious advisor foresaw the market downturn.","c":[32]},{"w":"appraise","p":"v","e":"An expert was hired to appraise the value of the painting.","c":[33]},{"w":"ascertain","p":"v","e":"Investigators tried to ascertain the cause of the fire.","c":[33]},{"w":"assay","p":"v/n","e":"Scientists assayed the ore to determine its gold content.","c":[33]},{"w":"debunk","p":"v","e":"The article debunked several popular health myths.","c":[33]},{"w":"descry","p":"v","e":"From the tower, the guard could descry ships far out at sea.","c":[33]},{"w":"disabuse","p":"v","e":"The coach disabused the players of any overconfidence.","c":[33]},{"w":"peruse","p":"v","e":"He perused the contract before signing it.","c":[33]},{"w":"unearth","p":"v","e":"Archaeologists unearthed an ancient temple.","c":[33]},{"w":"validate","p":"v","e":"The experiment helped validate the original hypothesis.","c":[33]},{"w":"verify","p":"v","e":"Please verify your identity before continuing.","c":[33]},{"w":"germane","p":"adj","e":"Please keep your comments germane to the topic.","c":[34]},{"w":"aesthetic","p":"adj/n","e":"The building's aesthetic combines modern and classical elements.","c":[35]},{"w":"anoint","p":"v","e":"The priest anointed the new king during the ceremony.","c":[35]},{"w":"artifact","p":"n","e":"Archaeologists found several ancient artifacts at the site.","c":[35]},{"w":"cartography","p":"n","e":"Advances in cartography made ocean navigation safer.","c":[35]},{"w":"construe","p":"v","e":"Her silence was construed as agreement.","c":[35]},{"w":"contextualize","p":"v","e":"The professor contextualized the poem within its historical period.","c":[35]},{"w":"conversely","p":"adv","e":"Conversely, sales dropped sharply in the second quarter.","c":[35]},{"w":"counterpoint","p":"n","e":"Her calm demeanor served as a counterpoint to his energy.","c":[35]},{"w":"deem","p":"v","e":"The judge deemed the evidence inadmissible.","c":[35]},{"w":"denote","p":"v","e":"A red flag denotes danger on the beach.","c":[35]},{"w":"didactic","p":"adj","e":"The film felt too didactic to be entertaining.","c":[35]},{"w":"disposition","p":"n","e":"She has a naturally cheerful disposition.","c":[35]},{"w":"elicit","p":"v","e":"The survey was designed to elicit honest feedback.","c":[35]},{"w":"entitlement","p":"n","e":"His sense of entitlement annoyed his coworkers.","c":[35]},{"w":"enumerate","p":"v","e":"The report enumerates several possible solutions.","c":[35]},{"w":"figurative","p":"adj","e":"\"Drowning in work\" is a figurative expression.","c":[35]},{"w":"goosebumps","p":"n","e":"The eerie music gave her goosebumps.","c":[35]},{"w":"hearken","p":"v","e":"The villagers hearkened to the elder's advice.","c":[35]},{"w":"hierarchy","p":"n","e":"The company has a strict management hierarchy.","c":[35]},{"w":"imminent","p":"adj","e":"Forecasters warned that the storm's arrival was imminent.","c":[35]},{"w":"implication","p":"n","e":"The implication of his silence was clear disapproval.","c":[35]},{"w":"inasmuch","p":"adv","e":"Inasmuch as the funds were misused, an audit is required.","c":[35]},{"w":"inform","p":"v","e":"Her upbringing informed her views on charity.","c":[35]},{"w":"inherent","p":"adj","e":"There are inherent risks in any investment.","c":[35]},{"w":"intrinsic","p":"adj","e":"The painting has intrinsic value beyond its market price.","c":[35]},{"w":"levy","p":"v/n","e":"The government decided to levy a new tax on imports.","c":[35]},{"w":"likewise","p":"adv","e":"He nodded, and she did likewise.","c":[35]},{"w":"moreover","p":"adv","e":"The plan is expensive; moreover, it lacks community support.","c":[35]},{"w":"mores","p":"n","e":"The novel explores the social mores of the era.","c":[35]},{"w":"net","p":"adj/v","e":"The company netted a healthy profit this quarter.","c":[35]},{"w":"nevertheless","p":"adv","e":"It rained all day; nevertheless, the festival continued.","c":[35]},{"w":"nonetheless","p":"adv","e":"The task was difficult; nonetheless, she completed it on time.","c":[35]},{"w":"preamble","p":"n","e":"The preamble outlines the purpose of the constitution.","c":[35]},{"w":"prospective","p":"adj","e":"The realtor showed the house to a prospective buyer.","c":[35]},{"w":"ranks","p":"n","e":"She rose quickly through the ranks of the company.","c":[35]},{"w":"render","p":"v","e":"The injury rendered him unable to compete.","c":[35]},{"w":"respectively","p":"adv","e":"The prizes went to Anna and Ben, respectively.","c":[35,49]},{"w":"rustic","p":"adj","e":"The cabin had a charming rustic decor.","c":[35]},{"w":"secular","p":"adj","e":"The country has a secular government.","c":[35]},{"w":"sentient","p":"adj","e":"Some philosophers debate whether AI could ever be sentient.","c":[35]},{"w":"status","p":"n","e":"The court reviewed the legal status of the property.","c":[35]},{"w":"timely","p":"adj","e":"Her timely advice saved the project.","c":[35]},{"w":"vintage","p":"adj/n","e":"She collects vintage cars from the 1960s.","c":[35]},{"w":"virtual","p":"adj","e":"The delay caused a virtual shutdown of the factory.","c":[35]},{"w":"whereas","p":"conj","e":"He prefers tea, whereas she prefers coffee.","c":[35]},{"w":"novel","p":"adj","e":"The team proposed a novel solution to the problem.","c":[36]},{"w":"unprecedented","p":"adj","e":"The pandemic caused unprecedented economic disruption.","c":[36]},{"w":"sanguine","p":"adj","e":"Despite the setback, she remained sanguine about the project.","c":[37]},{"w":"absolve","p":"v","e":"The court absolved him of all wrongdoing.","c":[38]},{"w":"acquit","p":"v","e":"The jury voted to acquit the defendant.","c":[38]},{"w":"exculpate","p":"v","e":"New DNA evidence exculpated the accused man.","c":[38]},{"w":"exonerate","p":"v","e":"New evidence exonerated the man after twenty years in prison.","c":[38]},{"w":"expiate","p":"v","e":"He hoped the donation would help expiate his guilt.","c":[38]},{"w":"palliate","p":"v","e":"The medication can palliate the symptoms but not cure the disease.","c":[38]},{"w":"redress","p":"v/n","e":"The victims sought redress for the damages they suffered.","c":[38]},{"w":"vindicate","p":"v","e":"The new evidence finally vindicated the accused man.","c":[38]},{"w":"elated","p":"adj","e":"She was elated after hearing the good news.","c":[39]},{"w":"hedonist","p":"n","e":"As a hedonist, he prioritized comfort over ambition.","c":[39]},{"w":"savor","p":"v","e":"She savored every bite of the dessert.","c":[39]},{"w":"augur","p":"v/n","e":"The clear skies augured well for the outdoor ceremony.","c":[40]},{"w":"auspice","p":"n","e":"The festival was held under the auspices of the local university.","c":[40]},{"w":"fey","p":"adj","e":"There was something fey about the way she predicted events.","c":[40]},{"w":"foreshadow","p":"v","e":"The dark clouds foreshadowed the coming storm.","c":[40]},{"w":"harbinger","p":"n","e":"Dark clouds were a harbinger of the coming storm.","c":[40]},{"w":"portentous","p":"adj","e":"The gathering storm clouds seemed portentous.","c":[40]},{"w":"presage","p":"v/n","e":"The economic slowdown may presage a coming recession.","c":[40]},{"w":"prescient","p":"adj","e":"Her prescient warning about the market crash proved accurate.","c":[40]},{"w":"prognosticate","p":"v","e":"Analysts prognosticate slow growth for the coming year.","c":[40]},{"w":"efficacy","p":"n","e":"Clinical trials tested the drug's efficacy.","c":[41]},{"w":"empirical","p":"adj","e":"The study relies on empirical data from field trials.","c":[41]},{"w":"feasible","p":"adj","e":"The engineers confirmed the plan was technically feasible.","c":[41]},{"w":"judicious","p":"adj","e":"She made a judicious decision to delay the launch.","c":[41]},{"w":"optimal","p":"adj","e":"They chose the optimal route to save time.","c":[41]},{"w":"optimum","p":"adj/n","e":"The greenhouse maintains optimum humidity for the plants.","c":[41,46]},{"w":"plausible","p":"adj","e":"She offered a plausible explanation for the delay.","c":[41]},{"w":"pragmatic","p":"adj","e":"She took a pragmatic approach to solving the budget crisis.","c":[41]},{"w":"prudent","p":"adj","e":"It's prudent to save part of every paycheck.","c":[41]},{"w":"qualified","p":"adj","e":"She gave the plan only qualified support.","c":[41]},{"w":"sound","p":"adj","e":"Her argument was logically sound.","c":[41]},{"w":"viable","p":"adj","e":"The startup presented a viable business plan.","c":[41]},{"w":"abate","p":"v","e":"The storm finally began to abate after midnight.","c":[42]},{"w":"alleviate","p":"v","e":"The medicine alleviated her headache within an hour.","c":[42]},{"w":"subside","p":"v","e":"The floodwaters slowly began to subside.","c":[42]},{"w":"adage","p":"n","e":"As the old adage goes, actions speak louder than words.","c":[43]},{"w":"aphorism","p":"n","e":"He liked to quote the aphorism, 'less is more.'","c":[43]},{"w":"apothegm","p":"n","e":"The teacher shared an apothegm about patience with the class.","c":[43]},{"w":"axiom","p":"n","e":"The theorem relies on a basic mathematical axiom.","c":[43]},{"w":"bromide","p":"n","e":"His advice amounted to little more than a tired bromide.","c":[43]},{"w":"dictum","p":"n","e":"The judge's dictum set a precedent for future cases.","c":[43]},{"w":"epigram","p":"n","e":"His speeches were full of clever epigrams.","c":[43]},{"w":"platitude","p":"n","e":"His speech was full of platitudes about teamwork.","c":[43]},{"w":"sententious","p":"adj","e":"The old man's sententious advice grew tiresome.","c":[43]},{"w":"truism","p":"n","e":"It's a truism that practice improves performance.","c":[43]},{"w":"beneficial","p":"adj","e":"Regular exercise is beneficial to overall health.","c":[44]},{"w":"benign","p":"adj","e":"The tumor turned out to be benign.","c":[44]},{"w":"innocuous","p":"adj","e":"The comment seemed innocuous, but it upset her.","c":[44]},{"w":"pristine","p":"adj","e":"The hikers were amazed by the pristine wilderness.","c":[44]},{"w":"salubrious","p":"adj","e":"The coastal town has a salubrious climate.","c":[44]},{"w":"salutary","p":"adj","e":"The setback had a salutary effect, forcing them to improve.","c":[44]},{"w":"affable","p":"adj","e":"The affable host made every guest feel welcome.","c":[45]},{"w":"cosmopolitan","p":"adj","e":"New York is known as a cosmopolitan city.","c":[45]},{"w":"gregarious","p":"adj","e":"Her gregarious personality made her popular at parties.","c":[45]},{"w":"adventitious","p":"adj","e":"Their meeting was purely adventitious, not planned at all.","c":[46]},{"w":"amulet","p":"n","e":"She wore an amulet believed to ward off bad luck.","c":[46]},{"w":"auspicious","p":"adj","e":"The team's early lead was an auspicious sign for the season.","c":[46]},{"w":"fortuitous","p":"adj","e":"Their meeting at the airport was entirely fortuitous.","c":[46]},{"w":"kismet","p":"n","e":"They believed their meeting was simply kismet.","c":[46]},{"w":"propitious","p":"adj","e":"Conditions were propitious for launching the new product.","c":[46]},{"w":"providential","p":"adj","e":"The rain arrived at a providential moment, saving the crops.","c":[46]},{"w":"talisman","p":"n","e":"He carried the old coin as a talisman for good luck.","c":[46]},{"w":"eclipse","p":"v","e":"The new phone quickly eclipsed its predecessor in sales.","c":[47]},{"w":"outstrip","p":"v","e":"Demand for the product quickly outstripped supply.","c":[47]},{"w":"overshadow","p":"v","e":"The scandal overshadowed the team's on-field success.","c":[47]},{"w":"makeshift","p":"adj","e":"They built a makeshift shelter out of branches.","c":[48]},{"w":"supersede","p":"v","e":"The new model superseded the outdated version.","c":[48]},{"w":"antecede","p":"v","e":"The invention of the wheel antecedes recorded history.","c":[49]},{"w":"antedate","p":"v","e":"This manuscript antedates all other known copies by a century.","c":[49]},{"w":"anterior","p":"adj","e":"The anterior chamber of the heart pumps blood to the lungs.","c":[49]},{"w":"chronological","p":"adj","e":"The exhibit presents the artist's work in chronological order.","c":[49]},{"w":"diurnal","p":"adj","e":"Most humans follow a diurnal pattern, active by day.","c":[49]},{"w":"eon","p":"n","e":"Geological change occurs over eons, not years.","c":[49]},{"w":"epoch","p":"n","e":"The invention of the internet marked a new epoch in history.","c":[49]},{"w":"fortnight","p":"n","e":"They plan to visit for a fortnight this summer.","c":[49]},{"w":"gradation","p":"n","e":"The painting shows a subtle gradation of color.","c":[49]},{"w":"juncture","p":"n","e":"At this juncture, we need to reconsider our strategy.","c":[49]},{"w":"millennium","p":"n","e":"The old bridge has stood for nearly a millennium.","c":[49]},{"w":"penultimate","p":"adj","e":"The penultimate chapter reveals the identity of the killer.","c":[49]},{"w":"retrospective","p":"adj/n","e":"The museum held a retrospective of her early paintings.","c":[49]},{"w":"simultaneous","p":"adj","e":"The two events occurred simultaneously.","c":[49]},{"w":"succeeding","p":"adj","e":"Sales improved in each succeeding quarter.","c":[49]},{"w":"synchronous","p":"adj","e":"The dancers moved in synchronous steps.","c":[49]},{"w":"temporal","p":"adj","e":"The book explores both spiritual and temporal power.","c":[49]},{"w":"analogous","p":"adj","e":"The heart's function is analogous to that of a pump.","c":[50]},{"w":"commensurate","p":"adj","e":"Her salary is commensurate with her years of experience.","c":[50]},{"w":"complementary","p":"adj","e":"The two flavors are complementary in the dish.","c":[50]},{"w":"homogeneous","p":"adj","e":"The neighborhood is fairly homogeneous in income level.","c":[50]},{"w":"offset","p":"v","e":"The gains in one division offset the losses in another.","c":[50]},{"w":"requite","p":"v","e":"He hoped to requite her kindness someday.","c":[50]},{"w":"artless","p":"adj","e":"His artless honesty surprised the interviewer.","c":[51]},{"w":"aver","p":"v","e":"The witness averred that she saw the entire incident.","c":[51]},{"w":"candid","p":"adj","e":"She gave a candid account of what happened.","c":[51]},{"w":"candor/candid","p":"n/adj","e":"She spoke with such candor that everyone trusted her judgment.","c":[51]},{"w":"canonical","p":"adj","e":"The textbook is the canonical reference in the field.","c":[51]},{"w":"credibility","p":"n","e":"The scandal damaged the senator's credibility.","c":[51]},{"w":"decorous","p":"adj","e":"Guests were expected to be decorous at the formal dinner.","c":[51]},{"w":"earnest","p":"adj","e":"He made an earnest effort to repair the friendship.","c":[51]},{"w":"fealty","p":"n","e":"The knight swore fealty to the king.","c":[51]},{"w":"fidelity","p":"n","e":"The translation maintains fidelity to the original text.","c":[51]},{"w":"frankness","p":"n","e":"I appreciate your frankness about the project's problems.","c":[51]},{"w":"indisputable","p":"adj","e":"The evidence of his guilt was indisputable.","c":[51]},{"w":"indubitable","p":"adj","e":"Her talent as a musician is indubitable.","c":[51]},{"w":"legitimate","p":"adj","e":"He had a legitimate reason for missing the meeting.","c":[51]},{"w":"pious","p":"adj","e":"The pious monk prayed several times a day.","c":[51]},{"w":"principled","p":"adj","e":"She is known as a principled and honest leader.","c":[51]},{"w":"probity","p":"n","e":"The auditor was praised for his probity and honesty.","c":[51]},{"w":"propriety","p":"n","e":"She always acted with the utmost propriety at formal events.","c":[51]},{"w":"sincere","p":"adj","e":"His sincere apology restored their friendship.","c":[51]},{"w":"veracious","p":"adj","e":"His veracious account matched the other witnesses' statements.","c":[51]},{"w":"veracity","p":"n","e":"The journalist checked the veracity of every claim.","c":[51]},{"w":"verity","p":"n","e":"The verity of her claim was confirmed by the records.","c":[51]},{"w":"banal","p":"adj","e":"The speech was full of banal phrases and clichés.","c":[52]},{"w":"fatuous","p":"adj","e":"His fatuous remarks added nothing useful to the discussion.","c":[52]},{"w":"hackneyed","p":"adj","e":"The film relied on hackneyed plot twists. (Cliche)","c":[52]},{"w":"insipid","p":"adj","e":"The soup tasted insipid without any seasoning.","c":[52]},{"w":"lackluster","p":"adj","e":"The team gave a lackluster performance in the final.","c":[52],"t":"lacking energy"},{"w":"monotony","p":"n","e":"The monotony of the assembly line wore on the workers.","c":[52]},{"w":"mundane","p":"adj","e":"He grew tired of the mundane routine of office work.","c":[52]},{"w":"pedestrian","p":"adj/n","e":"The film's plot felt pedestrian and predictable.","c":[52]},{"w":"ponderous","p":"adj","e":"The professor's ponderous lecture put half the class to sleep.","c":[52]},{"w":"prosaic","p":"adj","e":"His prosaic writing style failed to engage readers.","c":[52]},{"w":"quotidian","p":"adj","e":"The novel finds beauty in quotidian moments.","c":[52]},{"w":"soporific","p":"adj","e":"The soporific lecture put half the class to sleep.","c":[52]},{"w":"tedious","p":"adj","e":"Filing paperwork all day can be tedious work.","c":[52]},{"w":"trite","p":"adj","e":"His trite excuses no longer convinced anyone.","c":[52]},{"w":"abrupt","p":"adj","e":"Her abrupt departure surprised everyone at the meeting.","c":[53]},{"w":"apace","p":"adv","e":"Preparations for the wedding proceeded apace.","c":[53]},{"w":"dispatch","p":"v/n","e":"The company dispatched a technician to fix the issue.","c":[53]},{"w":"headlong","p":"adj/adv","e":"He rushed headlong into the decision without thinking.","c":[53]},{"w":"impetuous","p":"adj","e":"His impetuous decision to quit surprised his colleagues.","c":[53]},{"w":"precipitate","p":"v/adj","e":"His hasty, precipitate decision led to serious losses.","c":[53]},{"w":"archaic","p":"adj","e":"The law still contains archaic language from the 1800s.","c":[54]},{"w":"bygone","p":"adj","e":"The museum recreates the fashions of a bygone era.","c":[54]},{"w":"obsolete","p":"adj","e":"The old software became obsolete within a few years.","c":[54]},{"w":"abash","p":"v","e":"He was not at all abashed by the criticism and kept smiling.","c":[55]},{"w":"chagrin","p":"n","e":"To her chagrin, she had forgotten the appointment entirely.","c":[55]},{"w":"compunction","p":"n","e":"He felt no compunction about breaking the outdated rule.","c":[55]},{"w":"contrition","p":"n","e":"His genuine contrition led the judge to reduce the sentence.","c":[55]},{"w":"diffidence","p":"n","e":"Her diffidence kept her from speaking up in meetings.","c":[55]},{"w":"foible","p":"n","e":"Everyone has small foibles that make them human.","c":[55],"t":"a minor weakness"},{"w":"gaucherie","p":"n","e":"His gaucherie at the formal dinner embarrassed his hosts.","c":[55]},{"w":"rue","p":"v","e":"He will rue the day he ignored her advice.","c":[55],"t":"to regret"},{"w":"abatement","p":"n","e":"The city offered a tax abatement to attract new businesses.","c":[56]},{"w":"aperture","p":"n","e":"Light entered the room through a small aperture in the wall.","c":[56]},{"w":"fissure","p":"n","e":"A fissure appeared in the rock after the earthquake.","c":[56]},{"w":"hiatus","p":"n","e":"The show is on hiatus until next season.","c":[56]},{"w":"interregnum","p":"n","e":"During the interregnum, the country had no formal leader.","c":[56]},{"w":"interstice","p":"n","e":"Weeds grew in the interstices between the pavement stones.","c":[56]},{"w":"orifice","p":"n","e":"The device is inserted through a small orifice in the wall.","c":[56]},{"w":"rent","p":"n","e":"A rent in the fabric revealed the lining underneath.","c":[56]},{"w":"respite","p":"n","e":"The ceasefire offered a brief respite from the fighting.","c":[56]},{"w":"capricious","p":"adj","e":"The capricious weather made it hard to plan the trip.","c":[57]},{"w":"erratic","p":"adj","e":"His erratic driving alarmed the other passengers.","c":[57]},{"w":"mercurial","p":"adj","e":"His mercurial temper made him hard to work with.","c":[57]},{"w":"sporadic","p":"adj","e":"There were sporadic reports of violence during the protest.","c":[57]},{"w":"volatile","p":"adj","e":"The stock market has been extremely volatile this year.","c":[57]},{"w":"avaricious","p":"adj","e":"The avaricious landlord raised rents whenever he could.","c":[58]},{"w":"covetous","p":"adj","e":"He cast a covetous eye on his neighbor's new car.","c":[58]},{"w":"mercenary","p":"adj/n","e":"His mercenary motives became obvious once money was involved.","c":[58]},{"w":"miserly","p":"adj","e":"The miserly old man refused to spend money on repairs.","c":[58]},{"w":"rapacious","p":"adj","e":"The rapacious developer bought up the entire block.","c":[58]},{"w":"stingy","p":"adj","e":"He was too stingy to leave a decent tip.","c":[58]},{"w":"venal","p":"adj","e":"The venal official accepted bribes without hesitation.","c":[58]},{"w":"anarchy","p":"n","e":"The collapse of government led to widespread anarchy.","c":[59]},{"w":"bureaucracy","p":"n","e":"Getting a permit required navigating a slow bureaucracy.","c":[59]},{"w":"counterproductive","p":"adj","e":"Yelling at employees is often counterproductive.","c":[59]},{"w":"default","p":"n/v","e":"The country risked defaulting on its debt.","c":[59]},{"w":"futile","p":"adj","e":"Their attempts to fix the old engine proved futile.","c":[59]},{"w":"implode","p":"v","e":"The old stadium was set to implode next week.","c":[59]},{"w":"plummet","p":"v","e":"Stock prices plummeted after the announcement.","c":[59]},{"w":"precarious","p":"adj","e":"The company's finances remained precarious after the merger.","c":[59]},{"w":"convoluted","p":"adj","e":"The instructions were so convoluted that nobody could follow them.","c":[60]},{"w":"disjointed","p":"adj","e":"Her disjointed argument confused the audience.","c":[60]},{"w":"tenuous","p":"adj","e":"The link between the two events is tenuous at best.","c":[60]},{"w":"abridge","p":"v","e":"The editor abridged the novel for younger readers.","c":[61]},{"w":"compendium","p":"n","e":"The encyclopedia is a compendium of human knowledge.","c":[61]},{"w":"cursory","p":"adj","e":"A cursory glance at the report revealed several typos.","c":[61]},{"w":"curtail","p":"v","e":"The company decided to curtail spending during the recession.","c":[61]},{"w":"syllabus","p":"n","e":"The professor distributed the syllabus on the first day.","c":[61]},{"w":"aspersion","p":"n","e":"The politician refused to cast aspersions on his rival.","c":[62]},{"w":"belittle","p":"v","e":"He constantly belittled his coworkers' contributions.","c":[62]},{"w":"berate","p":"v","e":"The coach berated the team for their sloppy performance.","c":[62]},{"w":"calumny","p":"n","e":"The senator sued the newspaper for calumny.","c":[62]},{"w":"castigate","p":"v","e":"The report castigated the company for its safety failures.","c":[62]},{"w":"censure","p":"v/n","e":"The senate voted to censure the official for misconduct.","c":[62]},{"w":"chastise","p":"v","e":"The teacher chastised the students for cheating.","c":[62]},{"w":"decry","p":"v","e":"Environmentalists decried the plan to log the ancient forest.","c":[62]},{"w":"defamation","p":"n","e":"The actor filed a defamation lawsuit against the tabloid.","c":[62]},{"w":"denigrate","p":"v","e":"He denigrated his rival's achievements in the interview.","c":[62]},{"w":"denounce","p":"v","e":"The activist denounced the corrupt officials publicly.","c":[62]},{"w":"deride","p":"v","e":"Critics derided the film as shallow and predictable.","c":[62]},{"w":"deride/derisive","p":"v/adj","e":"Critics derided the film as unoriginal and dull.","c":[62]},{"w":"diatribe","p":"n","e":"He launched into a diatribe against his former employer.","c":[62]},{"w":"discredit","p":"v","e":"New evidence discredited the witness's testimony.","c":[62]},{"w":"disparage","p":"v","e":"He often disparages the work of his rivals.","c":[62]},{"w":"excoriate","p":"v","e":"The report excoriated the agency for its negligence.","c":[62]},{"w":"gainsay","p":"v","e":"No one could gainsay the strength of her evidence.","c":[62,67]},{"w":"harangue","p":"n/v","e":"The coach delivered a harangue about the team's poor effort.","c":[62]},{"w":"impugn","p":"v","e":"The lawyer tried to impugn the witness's credibility.","c":[62]},{"w":"inveigh","p":"v","e":"Critics inveighed against the new tax proposal.","c":[62]},{"w":"lambaste","p":"v","e":"The coach lambasted the referee's controversial call.","c":[62]},{"w":"lampoon","p":"v/n","e":"The comedian lampooned the president's latest speech.","c":[62]},{"w":"objurgate","p":"v","e":"The editor objurgated the reporter for the factual errors.","c":[62]},{"w":"obloquy","p":"n","e":"The politician faced public obloquy after the scandal.","c":[62]},{"w":"opprobrium","p":"n","e":"The senator faced opprobrium for the leaked emails.","c":[62]},{"w":"pillory","p":"v","e":"The press pilloried the CEO for the data breach.","c":[62]},{"w":"rebuke","p":"v/n","e":"The teacher rebuked the student for arriving late again.","c":[62]},{"w":"remonstrate","p":"v","e":"Neighbors remonstrated with the city over the new zoning law.","c":[62]},{"w":"reprehend","p":"v","e":"Historians reprehend the regime's brutal policies.","c":[62]},{"w":"reprimand","p":"v/n","e":"The officer was reprimanded for the unauthorized search.","c":[62]},{"w":"reproach","p":"v/n","e":"She reproached him for arriving so late.","c":[62]},{"w":"reprove","p":"v","e":"She reproved her son for leaving his toys everywhere.","c":[62]},{"w":"revile","p":"v","e":"The dictator was reviled by his own people.","c":[62]},{"w":"slight","p":"v/adj","e":"She felt slighted when her idea was ignored.","c":[62]},{"w":"tirade","p":"n","e":"He launched into a tirade about the poor service.","c":[62]},{"w":"vituperate","p":"v","e":"The columnist vituperated the new policy in his editorial.","c":[62]},{"w":"chide","p":"n","e":"Ms Liewellyn is known to chide students who don't do their homework.","c":[62]},{"w":"baleful","p":"adj","e":"He gave a baleful glare to anyone who interrupted him.","c":[63]},{"w":"base","p":"adj","e":"His base motives soon became obvious to everyone.","c":[63]},{"w":"dour","p":"adj","e":"The dour clerk rarely smiled at customers.","c":[63]},{"w":"fell","p":"adj","e":"With one fell blow, the champion ended the match.","c":[63]},{"w":"malevolent","p":"adj","e":"The villain's malevolent grin frightened the children.","c":[63]},{"w":"patronizing","p":"adj","e":"Her patronizing tone irritated the junior staff.","c":[63]},{"w":"presumptuous","p":"adj","e":"It seemed presumptuous of him to skip the interview process.","c":[63]},{"w":"sardonic","p":"adj","e":"He gave a sardonic smile at the absurd suggestion.","c":[63]},{"w":"scathing","p":"adj","e":"The critic wrote a scathing review of the film.","c":[63]},{"w":"unseemly","p":"adj","e":"His unseemly behavior at the funeral shocked everyone.","c":[63]},{"w":"adverse","p":"adj","e":"The drug can cause adverse side effects.","c":[64]},{"w":"baneful","p":"adj","e":"Excessive gambling had a baneful effect on his finances.","c":[64]},{"w":"deface","p":"v","e":"Vandals defaced the statue with spray paint.","c":[64]},{"w":"deleterious","p":"adj","e":"Smoking has deleterious effects on the lungs.","c":[64]},{"w":"inimical","p":"adj","e":"Smoking is inimical to good health.","c":[64]},{"w":"injurious","p":"adj","e":"Excessive sun exposure is injurious to the skin.","c":[64]},{"w":"insidious","p":"adj","e":"The disease spread in an insidious, almost undetectable way.","c":[64]},{"w":"minatory","p":"adj","e":"He received a minatory letter demanding immediate payment.","c":[64]},{"w":"noxious","p":"adj","e":"Noxious fumes forced the workers to evacuate the plant.","c":[64]},{"w":"perfidious","p":"adj","e":"His perfidious behavior cost him every friend he had.","c":[64,86]},{"w":"pernicious","p":"adj","e":"Gossip can have a pernicious effect on office morale.","c":[64]},{"w":"adulterate","p":"v","e":"The company was fined for adulterating its olive oil with cheaper oils.","c":[65]},{"w":"debase","p":"v","e":"Counterfeit coins debase the currency's value.","c":[65]},{"w":"desiccate","p":"v","e":"The fruit is desiccated before being packaged.","c":[65]},{"w":"enervate","p":"v","e":"The intense heat enervated the entire team.","c":[65]},{"w":"exacerbate","p":"v","e":"The drought exacerbated the region's food shortage.","c":[65]},{"w":"impair","p":"v","e":"Lack of sleep can impair judgment.","c":[65]},{"w":"relegate","p":"v","e":"The star player was relegated to the bench.","c":[65]},{"w":"sap","p":"v","e":"The long negotiations sapped everyone's energy.","c":[65]},{"w":"stultify","p":"v","e":"Years of tedious work had stultified his creativity.","c":[65]},{"w":"undermine","p":"v","e":"Constant criticism undermined her confidence.","c":[65]},{"w":"vitiate","p":"v","e":"The scandal vitiated public trust in the institution.","c":[65]},{"w":"lavish","p":"adj/v","e":"They threw a lavish wedding reception.","c":[66]},{"w":"prodigal","p":"adj","e":"The prodigal son squandered his entire inheritance.","c":[66]},{"w":"profligate","p":"adj","e":"Critics called the government's spending profligate.","c":[66]},{"w":"contentious","p":"adj","e":"Immigration remains a contentious political topic.","c":[67]},{"w":"dissent","p":"n/v","e":"One justice dissented from the majority opinion.","c":[67]},{"w":"polarized","p":"adj","e":"The country's politics have become deeply polarized.","c":[67]},{"w":"refute","p":"v","e":"The scientist refuted the earlier study's conclusions.","c":[67]},{"w":"inadvertent","p":"adj","e":"The error was inadvertent, not a deliberate act.","c":[68]},{"w":"offhand","p":"adj/adv","e":"He made an offhand comment that upset her.","c":[68]},{"w":"authoritarian","p":"adj/n","e":"The authoritarian regime silenced all forms of dissent.","c":[69]},{"w":"despotic","p":"adj","e":"The despotic ruler crushed any sign of rebellion.","c":[69]},{"w":"dogmatic","p":"adj","e":"The professor's dogmatic views discouraged open debate.","c":[69]},{"w":"hegemonic","p":"adj","e":"The empire maintained hegemonic control over the region.","c":[69]},{"w":"imperious","p":"adj","e":"Her imperious tone left no room for disagreement.","c":[69]},{"w":"peremptory","p":"adj","e":"The manager's peremptory tone left no room for questions.","c":[69]},{"w":"potentate","p":"n","e":"The ancient potentate ruled over a vast empire.","c":[69]},{"w":"tyrannical","p":"adj","e":"The tyrannical boss demanded absolute obedience.","c":[69]},{"w":"abstruse","p":"adj","e":"The professor's abstruse lecture left most students confused.","c":[70]},{"w":"ambiguous","p":"adj","e":"The contract's wording was ambiguous and led to a dispute.","c":[70,78]},{"w":"arcane","p":"adj","e":"The manual was full of arcane technical jargon.","c":[70]},{"w":"bemusing","p":"adj","e":"The instructions were bemusing rather than helpful.","c":[70]},{"w":"conundrum","p":"n","e":"The engineers faced a real conundrum with the design flaw.","c":[70]},{"w":"counterintuitive","p":"adj","e":"It seems counterintuitive, but slower training can build strength faster.","c":[70]},{"w":"cryptic","p":"adj","e":"The message was so cryptic that no one could decode it.","c":[70]},{"w":"enigma","p":"n","e":"His true motives remained an enigma to his colleagues.","c":[70]},{"w":"enigmatic","p":"adj","e":"The artist's enigmatic smile has puzzled viewers for centuries.","c":[70]},{"w":"esoteric","p":"adj","e":"The lecture covered rather esoteric mathematical theories.","c":[70]},{"w":"inscrutable","p":"adj","e":"His inscrutable expression gave away no clues.","c":[70]},{"w":"jargon","p":"n","e":"The manual was full of technical jargon.","c":[70]},{"w":"obscure","p":"adj/v","e":"The reference was too obscure for most readers to understand.","c":[70]},{"w":"opaque","p":"adj","e":"The company's finances remained opaque to investors.","c":[70]},{"w":"paradox","p":"n","e":"It's a paradox that saving money can sometimes cost more.","c":[70]},{"w":"paradoxical","p":"adj","e":"It seems paradoxical that spending money can help you save.","c":[70]},{"w":"perplexing","p":"adj","e":"The riddle was perplexing even to the brightest students.","c":[70]},{"w":"quandary","p":"n","e":"He found himself in a quandary about which job to accept.","c":[70]},{"w":"recondite","p":"adj","e":"The lecture covered recondite topics in quantum theory.","c":[70]},{"w":"turbid","p":"adj","e":"The river ran turbid after the heavy rains.","c":[70]},{"w":"cynical","p":"adj","e":"He grew cynical after years of broken promises.","c":[71]},{"w":"dubious","p":"adj","e":"The claims in the ad seemed highly dubious.","c":[71]},{"w":"skeptic","p":"n","e":"As a skeptic, she demanded solid evidence before believing any claim.","c":[71]},{"w":"wary","p":"adj","e":"She remained wary of strangers offering unsolicited advice.","c":[71]},{"w":"ephemeral","p":"adj","e":"Fame in that industry is often ephemeral.","c":[72]},{"w":"fleeting","p":"adj","e":"They shared a fleeting glance across the room.","c":[72]},{"w":"transitory","p":"adj","e":"Fame in that industry tends to be transitory.","c":[72]},{"w":"pathological","p":"adj","e":"He was described as a pathological liar.","c":[73]},{"w":"paucity","p":"n","e":"There is a paucity of evidence to support the claim.","c":[74]},{"w":"scant","p":"adj","e":"There was scant evidence to support his claim.","c":[74]},{"w":"counterpart","p":"n","e":"The vice president met with his counterpart from the other country.","c":[75]},{"w":"derivative","p":"adj/n","e":"The novel was dismissed as derivative of earlier works.","c":[75]},{"w":"emulate","p":"v","e":"Young athletes often try to emulate their idols.","c":[75]},{"w":"ersatz","p":"adj","e":"The soldiers survived on ersatz coffee made from roots.","c":[75]},{"w":"facsimile","p":"n","e":"The museum displayed a facsimile of the original manuscript.","c":[75]},{"w":"factitious","p":"adj","e":"Her enthusiasm seemed factitious rather than genuine.","c":[75]},{"w":"precursor","p":"n","e":"The telegraph was a precursor to modern telecommunications.","c":[75]},{"w":"simulated","p":"adj","e":"The pilots trained in a simulated cockpit environment.","c":[75]},{"w":"vicarious","p":"adj","e":"He experienced a vicarious thrill watching the race on television.","c":[75]},{"w":"bombastic","p":"adj","e":"The politician's bombastic speech impressed few listeners.","c":[76]},{"w":"circumlocution","p":"n","e":"His circumlocution made a simple answer take ten minutes.","c":[76]},{"w":"garrulous","p":"adj","e":"The garrulous cab driver talked the entire ride.","c":[76]},{"w":"grandiloquent","p":"adj","e":"The politician's grandiloquent promises rarely came true.","c":[76]},{"w":"hyperbole","p":"n","e":"Saying \"I've told you a million times\" is hyperbole.","c":[76]},{"w":"loquacious","p":"adj","e":"The loquacious guide never stopped narrating the tour.","c":[76]},{"w":"periphrastic","p":"adj","e":"His periphrastic writing style obscured a simple argument.","c":[76]},{"w":"prolix","p":"adj","e":"His prolix explanation could have been said in one sentence.","c":[76]},{"w":"rhetoric","p":"n","e":"His speech was full of rhetoric but light on details.","c":[76]},{"w":"turgid","p":"adj","e":"His turgid prose made the essay difficult to finish.","c":[76]},{"w":"verbose","p":"adj","e":"His verbose report could have been half the length.","c":[76]},{"w":"antagonize","p":"v","e":"His constant teasing antagonized his younger brother.","c":[77]},{"w":"antithetic","p":"adj","e":"His casual style was antithetic to the firm's formal culture.","c":[77]},{"w":"boor","p":"n","e":"He acted like a boor at the dinner party.","c":[77]},{"w":"churlish","p":"adj","e":"It would be churlish to refuse such a generous offer.","c":[77]},{"w":"curmudgeon","p":"n","e":"The old curmudgeon complained about every small change.","c":[77]},{"w":"misanthropic","p":"adj","e":"The misanthropic hermit avoided all human contact.","c":[77]},{"w":"pugnacious","p":"adj","e":"His pugnacious attitude made negotiations difficult.","c":[77]},{"w":"truculent","p":"adj","e":"The truculent teenager argued with every instruction.","c":[77]},{"w":"vindictive","p":"adj","e":"His vindictive response to the criticism surprised his colleagues.","c":[77]},{"w":"ambivalent","p":"adj","e":"She felt ambivalent about accepting the promotion.","c":[78]},{"w":"arbitrary","p":"adj","e":"The judge's arbitrary rulings seemed inconsistent.","c":[78]},{"w":"indeterminate","p":"adj","e":"The trial was postponed for an indeterminate period.","c":[78]},{"w":"apathy","p":"n","e":"Voter apathy led to a very low turnout.","c":[79]},{"w":"complacent","p":"adj","e":"The team grew complacent after several easy wins.","c":[79]},{"w":"disquieting","p":"adj","e":"The report contained several disquieting statistics.","c":[79]},{"w":"indifferent","p":"adj","e":"He seemed indifferent to the outcome of the game.","c":[79]},{"w":"affectation","p":"n","e":"His British accent was just an affectation.","c":[80]},{"w":"disingenuous","p":"adj","e":"His apology seemed disingenuous given his past behavior.","c":[80]},{"w":"fulsome","p":"adj","e":"His fulsome praise seemed insincere to most listeners.","c":[80]},{"w":"glib","p":"adj","e":"His glib excuses fooled no one.","c":[80]},{"w":"ostensible","p":"adj","e":"The ostensible reason for the trip was business, not pleasure.","c":[80]},{"w":"pretentious","p":"adj","e":"His pretentious vocabulary made the essay hard to read.","c":[80]},{"w":"unctuous","p":"adj","e":"The salesman's unctuous manner made customers uneasy.","c":[80]},{"w":"pariah","p":"n","e":"After the scandal, he became a pariah in the industry.","c":[81]},{"w":"recluse","p":"n","e":"After the scandal, he lived as a recluse.","c":[81]},{"w":"aberrant","p":"adj","e":"His aberrant behavior worried his coworkers.","c":[82]},{"w":"aberration","p":"n","e":"The error was an aberration in an otherwise flawless record.","c":[82]},{"w":"anomalous","p":"adj","e":"The anomalous reading suggested an error in the instrument.","c":[82]},{"w":"anomaly","p":"n","e":"The scientist noticed an anomaly in the data set.","c":[82]},{"w":"discrepancy","p":"n","e":"Auditors found a discrepancy in the financial records.","c":[82]},{"w":"eccentric","p":"adj","e":"The eccentric inventor filled his house with odd gadgets.","c":[82]},{"w":"fringe","p":"n/adj","e":"The idea was once considered fringe but is now mainstream.","c":[82]},{"w":"iconoclast","p":"n","e":"The artist was an iconoclast who rejected traditional styles.","c":[82]},{"w":"idiosyncrasy","p":"n","e":"One of his idiosyncrasies is refusing to answer unknown numbers.","c":[82]},{"w":"incongruous","p":"adj","e":"His casual outfit seemed incongruous at the formal event.","c":[82]},{"w":"extraneous","p":"adj","e":"The essay included too many extraneous details.","c":[83]},{"w":"peripheral","p":"adj","e":"The issue is peripheral to the main debate.","c":[83]},{"w":"tangential","p":"adj","e":"His comment was tangential to the discussion.","c":[83]},{"w":"bilious","p":"adj","e":"He woke up feeling bilious after the rich meal.","c":[84]},{"w":"dudgeon","p":"n","e":"She left the meeting in high dudgeon after the insult.","c":[84]},{"w":"irascible","p":"adj","e":"The irascible old man yelled at anyone who disturbed him.","c":[84]},{"w":"pettish","p":"adj","e":"The child became pettish when told it was bedtime.","c":[84]},{"w":"petulant","p":"adj","e":"The petulant customer complained about every small detail.","c":[84]},{"w":"pique","p":"n/v","e":"His refusal was born of pique rather than reason.","c":[84]},{"w":"querulous","p":"adj","e":"The querulous patient complained about every nurse.","c":[84]},{"w":"restive","p":"adj","e":"The restive crowd grew impatient waiting for the results.","c":[84]},{"w":"umbrage","p":"n","e":"She took umbrage at his careless remark.","c":[84]},{"w":"waspish","p":"adj","e":"His waspish remarks stung more than he intended.","c":[84]},{"w":"notoriety","p":"n","e":"The scandal brought him unwanted notoriety.","c":[85]},{"w":"apocryphal","p":"adj","e":"The story about the founder is likely apocryphal.","c":[86]},{"w":"belie","p":"v","e":"Her calm expression belied her inner panic.","c":[86]},{"w":"bogus","p":"adj","e":"The investigators discovered the documents were bogus.","c":[86]},{"w":"canard","p":"n","e":"The rumor turned out to be nothing but a canard.","c":[86]},{"w":"chicanery","p":"n","e":"The scandal revealed years of financial chicanery.","c":[86]},{"w":"crafty","p":"adj","e":"The crafty fox eluded the hunters again.","c":[86]},{"w":"defamatory","p":"adj","e":"The magazine was sued for publishing defamatory claims.","c":[86]},{"w":"dissemble","p":"v","e":"She tried to dissemble her true feelings about the decision.","c":[86]},{"w":"duplicity","p":"n","e":"His duplicity was revealed when the truth finally emerged.","c":[86]},{"w":"embellish","p":"v","e":"He embellished the story to make it more exciting.","c":[86]},{"w":"equivocate","p":"v","e":"The witness equivocated instead of answering directly.","c":[86]},{"w":"erroneous","p":"adj","e":"The report contained several erroneous figures.","c":[86]},{"w":"fallacious","p":"adj","e":"The argument rests on a fallacious assumption.","c":[86]},{"w":"feigned","p":"adj","e":"Her feigned surprise didn't fool anyone.","c":[86]},{"w":"guile","p":"n","e":"He got the deal through sheer guile.","c":[86]},{"w":"mendacious","p":"adj","e":"The witness gave a mendacious account of the events.","c":[86]},{"w":"mendacious/mendacity","p":"adj/n","e":"The witness was found guilty of mendacious testimony.","c":[86]},{"w":"perfidy","p":"n","e":"The general's perfidy cost his soldiers their lives.","c":[86]},{"w":"phony","p":"adj","e":"The detective quickly spotted the phony documents.","c":[86]},{"w":"prevaricate","p":"v","e":"The senator prevaricated rather than answer the question directly.","c":[86]},{"w":"specious","p":"adj","e":"His specious reasoning fooled the jury for a while.","c":[86]},{"w":"spurious","p":"adj","e":"The claim was later revealed to be spurious.","c":[86]},{"w":"wily","p":"adj","e":"The wily negotiator outmaneuvered his rivals.","c":[86]},{"w":"abrasive","p":"adj","e":"His abrasive tone alienated several clients.","c":[87]},{"w":"acerbic","p":"adj","e":"His acerbic wit often left colleagues stinging.","c":[87]},{"w":"acidulous","p":"adj","e":"The critic's acidulous review discouraged the young author.","c":[87]},{"w":"acrimonious","p":"adj","e":"The negotiations turned acrimonious after the deadline passed.","c":[87]},{"w":"asperity","p":"n","e":"He responded to the insult with surprising asperity.","c":[87]},{"w":"caustic","p":"adj","e":"His caustic remarks left the intern in tears.","c":[87]},{"w":"mordacious","p":"adj","e":"His mordacious wit made even his friends wince.","c":[87]},{"w":"mordant","p":"adj","e":"The critic's mordant review devastated the young playwright.","c":[87]},{"w":"trenchant","p":"adj","e":"Her trenchant analysis exposed the study's flaws.","c":[87]},{"w":"bereave","p":"v","e":"The accident bereaved the family of their only son.","c":[88]},{"w":"cadaver","p":"n","e":"Medical students studied a cadaver in anatomy class.","c":[88]},{"w":"defunct","p":"adj","e":"The once-popular magazine is now defunct.","c":[88]},{"w":"demise","p":"n","e":"The company's demise came after years of mismanagement.","c":[88]},{"w":"dolorous","p":"adj","e":"A dolorous melody drifted from the funeral procession.","c":[88]},{"w":"elegy","p":"n","e":"She composed an elegy for the soldiers who had fallen.","c":[88]},{"w":"knell","p":"n","e":"The bell's slow knell announced the funeral procession.","c":[88]},{"w":"macabre","p":"adj","e":"The museum's exhibit included some macabre medical artifacts.","c":[88]},{"w":"moribund","p":"adj","e":"The once-thriving industry is now moribund.","c":[88]},{"w":"obsequies","p":"n","e":"The state held solemn obsequies for the fallen soldiers.","c":[88]},{"w":"posthumous","p":"adj","e":"The medal was awarded posthumously.","c":[88]},{"w":"sepulchral","p":"adj","e":"A sepulchral silence filled the ancient crypt.","c":[88]},{"w":"wraith","p":"n","e":"The old house was rumored to be haunted by a wraith.","c":[88]},{"w":"compliant","p":"adj","e":"The factory is now fully compliant with safety regulations.","c":[89]},{"w":"deference","p":"n","e":"She spoke with deference to her mentor's opinion.","c":[89]},{"w":"obsequious","p":"adj","e":"The obsequious assistant agreed with everything his boss said.","c":[89]},{"w":"officious","p":"adj","e":"The officious clerk insisted on checking every form twice.","c":[89]},{"w":"supplicate","p":"v","e":"The villagers supplicated the king for mercy.","c":[89]},{"w":"sycophant","p":"n","e":"The manager was surrounded by sycophants who never disagreed.","c":[89]},{"w":"tractable","p":"adj","e":"The new employee proved to be tractable and eager to learn.","c":[89]},{"w":"covert","p":"adj","e":"The agency ran a covert operation overseas.","c":[90]},{"w":"implicit","p":"adj","e":"There was an implicit understanding that he would help.","c":[90]},{"w":"occult","p":"adj/n","e":"The book explores various occult traditions.","c":[90]},{"w":"tacit","p":"adj","e":"There was a tacit agreement not to discuss the incident.","c":[90]},{"w":"abhor","p":"v","e":"She abhors any form of cruelty to animals.","c":[91]},{"w":"abhorrence","p":"n","e":"She viewed cruelty to animals with abhorrence.","c":[91]},{"w":"alienate","p":"v","e":"His harsh comments alienated many longtime supporters.","c":[91]},{"w":"anathema","p":"n","e":"Cheating was anathema to the honor code of the school.","c":[91]},{"w":"antagonism","p":"n","e":"Years of antagonism between the two families finally ended.","c":[91]},{"w":"antipathy","p":"n","e":"There was a clear antipathy between the two rivals.","c":[91]},{"w":"detestation","p":"n","e":"He regarded corruption with deep detestation.","c":[91]},{"w":"loathing","p":"n","e":"He regarded the betrayal with utter loathing.","c":[91]},{"w":"malice","p":"n","e":"There was no malice in his teasing, only affection.","c":[91]},{"w":"odium","p":"n","e":"The scandal brought public odium upon the entire company.","c":[91]},{"w":"rancor","p":"n","e":"Years later, the rancor between the brothers had not faded.","c":[91]},{"w":"ardor/ardent","p":"n/adj","e":"Her ardor for justice drove her to become a lawyer.","c":[92]},{"w":"chauvinism","p":"n","e":"His comments reflected an old-fashioned male chauvinism.","c":[92]},{"w":"doctrinaire","p":"n/adj","e":"His doctrinaire approach left no room for compromise.","c":[92]},{"w":"dogma","p":"n","e":"The party's rigid dogma left little room for debate.","c":[92]},{"w":"fanatical","p":"adj","e":"He is fanatical about keeping his workspace organized.","c":[92]},{"w":"fervid","p":"adj","e":"He gave a fervid speech in support of the cause.","c":[92]},{"w":"illiberality","p":"n","e":"The policy reflects an unexpected illiberality on immigration.","c":[92]},{"w":"partial","p":"adj","e":"The judge was accused of being partial to one side.","c":[92]},{"w":"partisan","p":"adj/n","e":"The debate quickly became partisan and heated.","c":[92]},{"w":"subjective","p":"adj","e":"Her review was highly subjective and emotional.","c":[92]},{"w":"tendentious","p":"adj","e":"The article offered a tendentious account of the strike.","c":[92]},{"w":"zealot","p":"n","e":"The zealot refused to consider any opposing viewpoint.","c":[92]},{"w":"compendious","p":"adj","e":"The textbook offers a compendious overview of the subject.","c":[93]},{"w":"curt","p":"adj","e":"Her curt reply suggested she was in a hurry.","c":[93]},{"w":"laconic","p":"adj","e":"His laconic reply gave nothing away.","c":[93]},{"w":"pithy","p":"adj","e":"Her pithy comment summed up the entire debate.","c":[93]},{"w":"reticent","p":"adj","e":"He remained reticent about his plans for the future.","c":[93]},{"w":"succinct","p":"adj","e":"Her succinct summary covered everything in two sentences.","c":[93]},{"w":"taciturn","p":"adj","e":"He was taciturn during the meeting, offering only brief replies.","c":[93]},{"w":"inconsequential","p":"adj","e":"The typo was inconsequential and didn't affect the meaning.","c":[94]},{"w":"peccadillo","p":"n","e":"He forgave her small peccadilloes without complaint.","c":[94]},{"w":"trifling","p":"adj","e":"He dismissed the complaint as a trifling matter.","c":[94]},{"w":"dormant","p":"adj","e":"The volcano has been dormant for centuries.","c":[95]},{"w":"flag","p":"v","e":"His energy began to flag late in the race.","c":[95]},{"w":"indolent","p":"adj","e":"The indolent cat spent the entire day napping.","c":[95]},{"w":"inert","p":"adj","e":"The gas remained inert even at high temperatures.","c":[95]},{"w":"lackadaisical","p":"adj","e":"His lackadaisical attitude toward homework worried his parents.","c":[95]},{"w":"languid","p":"adj","e":"They spent a languid afternoon by the pool.","c":[95]},{"w":"lassitude","p":"n","e":"A wave of lassitude overcame him after the long flight.","c":[95]},{"w":"lethargic","p":"adj","e":"The heat made everyone feel lethargic by midafternoon.","c":[95]},{"w":"listless","p":"adj","e":"After the illness, she felt listless for weeks.","c":[95]},{"w":"phlegmatic","p":"adj","e":"Her phlegmatic response surprised those expecting outrage.","c":[95]},{"w":"quiescent","p":"adj","e":"The volcano has remained quiescent for decades.","c":[95]},{"w":"slack","p":"adj/n","e":"Business has been slack this month.","c":[95]},{"w":"slothful","p":"adj","e":"His slothful habits worried his ambitious parents.","c":[95]},{"w":"static","p":"adj","e":"Sales figures have remained static for the past year.","c":[95]},{"w":"torpid","p":"adj","e":"The bear becomes torpid during its winter hibernation.","c":[95]},{"w":"torpor","p":"n","e":"The heat left everyone in a state of torpor.","c":[95]},{"w":"destitute","p":"adj","e":"The flood left thousands of families destitute.","c":[96]},{"w":"esurient","p":"adj","e":"The esurient crowd rushed toward the free buffet.","c":[96]},{"w":"impecunious","p":"adj","e":"The impecunious student survived on instant noodles.","c":[96]},{"w":"indigent","p":"adj","e":"The charity provides meals for the indigent.","c":[96]},{"w":"penurious","p":"adj","e":"After years of penurious living, he finally found steady work.","c":[96]},{"w":"fanciful","p":"adj","e":"The children loved the story's fanciful creatures.","c":[97]},{"w":"table","p":"v","e":"The committee tabled the motion until next month.","c":[98]},{"w":"constrict","p":"v","e":"The tight collar constricted his breathing.","c":[99]},{"w":"deflect","p":"v","e":"He deflected every question about the scandal.","c":[99]},{"w":"deterrent","p":"n","e":"Harsh penalties act as a deterrent to crime.","c":[99]},{"w":"discomfort","p":"v/n","e":"The tight shoes caused considerable discomfort.","c":[99]},{"w":"encumber","p":"v","e":"Heavy debt encumbered the family for years.","c":[99]},{"w":"eschew","p":"v","e":"She eschews processed foods in favor of fresh produce.","c":[99]},{"w":"fetter","p":"v/n","e":"Strict regulations fettered the small business's growth.","c":[99]},{"w":"forfend","p":"v","e":"Heaven forfend that such a disaster should occur again.","c":[99]},{"w":"hinder","p":"v","e":"Bad weather hindered the search-and-rescue effort.","c":[99]},{"w":"impede","p":"v","e":"Heavy traffic impeded their journey to the airport.","c":[99]},{"w":"inhibit","p":"v","e":"Fear of failure can inhibit creativity.","c":[99]},{"w":"obviate","p":"v","e":"Better planning would obviate the need for overtime.","c":[99]},{"w":"occlude","p":"v","e":"A blood clot occluded the artery.","c":[99]},{"w":"preempt","p":"v","e":"The company preempted criticism by issuing an early apology.","c":[99]},{"w":"skirt","p":"v","e":"The politician skirted the question about taxes.","c":[99]},{"w":"stymie","p":"v","e":"Legal challenges stymied the project for years.","c":[99]},{"w":"thwart","p":"v","e":"Security guards thwarted the attempted robbery.","c":[99]},{"w":"credulous","p":"adj","e":"Credulous investors fell for the obvious scam.","c":[100]},{"w":"dilettante","p":"n","e":"He was more of a dilettante than a serious scholar of art.","c":[100]},{"w":"fledgling","p":"n/adj","e":"The fledgling company struggled to attract investors.","c":[100]},{"w":"gauche","p":"adj","e":"His gauche remarks embarrassed the whole table.","c":[100]},{"w":"gawky","p":"adj","e":"The gawky teenager hadn't grown into his height yet.","c":[100]},{"w":"gullible","p":"adj","e":"The gullible investor fell for the obvious scam.","c":[100]},{"w":"ingenuous","p":"adj","e":"His ingenuous questions revealed how little he knew.","c":[100]},{"w":"layperson","p":"n","e":"The report was written so a layperson could understand it.","c":[100]},{"w":"naive","p":"adj","e":"It was naive of him to trust the stranger so quickly.","c":[100]},{"w":"neophyte","p":"n","e":"As a neophyte, she still had much to learn about the trade.","c":[100]},{"w":"novitiate","p":"n","e":"He spent a year in novitiate before taking his final vows.","c":[100]},{"w":"proselyte","p":"n","e":"The new proselyte quickly adopted the group's beliefs.","c":[100]},{"w":"rudimentary","p":"adj","e":"He has only a rudimentary understanding of the software.","c":[100]},{"w":"tyro","p":"n","e":"As a tyro chess player, he lost quickly to the master.","c":[100]},{"w":"dismiss","p":"v","e":"The board dismissed the proposal without discussion.","c":[101]},{"w":"negate","p":"v","e":"One error can negate hours of careful work.","c":[101]},{"w":"prohibitive","p":"adj","e":"The cost of the surgery was prohibitive for most families.","c":[101]},{"w":"proscribe","p":"v","e":"The regulation proscribes the use of certain chemicals.","c":[101]},{"w":"foment","p":"v","e":"The speech was accused of fomenting unrest.","c":[102]},{"w":"incendiary","p":"adj","e":"The politician's incendiary remarks sparked protests.","c":[102]},{"w":"admonish","p":"v","e":"The teacher admonished the students for talking during the exam.","c":[103]},{"w":"belabor","p":"v","e":"There is no need to belabor the point any further.","c":[103]},{"w":"cavil","p":"v/n","e":"He tends to cavil about trivial details instead of the main issue.","c":[103]},{"w":"enjoin","p":"v","e":"The court enjoined the company from releasing the product.","c":[103]},{"w":"exhort","p":"v","e":"The coach exhorted the players to give their best effort.","c":[103]},{"w":"hector","p":"v","e":"He hectored his employees until the report was finished.","c":[103]},{"w":"martinet","p":"n","e":"The new drill sergeant was a martinet who tolerated no error.","c":[103]},{"w":"quibble","p":"v/n","e":"They quibbled over small details instead of the main issue.","c":[103]},{"w":"reproof","p":"n","e":"He accepted the teacher's reproof without complaint.","c":[103]},{"w":"abdicate","p":"v","e":"The king chose to abdicate rather than fight for his crown.","c":[104]},{"w":"divest","p":"v","e":"The fund decided to divest from fossil fuels.","c":[104]},{"w":"repudiate","p":"v","e":"He repudiated the accusations against him.","c":[104]},{"w":"defile","p":"v","e":"Vandals defiled the ancient monument with graffiti.","c":[105]},{"w":"fetid","p":"adj","e":"The fetid odor from the swamp filled the air.","c":[105]},{"w":"invidious","p":"adj","e":"The critic drew an invidious comparison between the two authors.","c":[105]},{"w":"noisome","p":"adj","e":"A noisome smell drifted from the abandoned building.","c":[105]},{"w":"odious","p":"adj","e":"His odious behavior made him unwelcome at the party.","c":[105]},{"w":"putrid","p":"adj","e":"The putrid smell of rotting fish filled the market.","c":[105]},{"w":"rebarbative","p":"adj","e":"His rebarbative manner discouraged most visitors.","c":[105]},{"w":"abeyance","p":"n","e":"The project was held in abeyance until funding was approved.","c":[106]},{"w":"abjure","p":"v","e":"He publicly abjured his earlier political views.","c":[106]},{"w":"abnegation","p":"n","e":"His abnegation of comfort impressed the other soldiers.","c":[106]},{"w":"abortive","p":"adj","e":"The abortive coup collapsed within hours.","c":[106]},{"w":"abrogate","p":"v","e":"The new government moved to abrogate the old treaty.","c":[106]},{"w":"decamp","p":"v","e":"The tenants decamped before paying the last month's rent.","c":[106]},{"w":"demur","p":"v/n","e":"She demurred when asked to sign the contract immediately.","c":[106]},{"w":"recant","p":"v","e":"Under pressure, the scientist recanted his earlier findings.","c":[106]},{"w":"recidivism","p":"n","e":"The program aims to reduce recidivism among young offenders.","c":[106]},{"w":"remission","p":"n","e":"Her cancer has been in remission for five years.","c":[106]},{"w":"renege","p":"v","e":"He reneged on his promise to help with the move.","c":[106]},{"w":"rescind","p":"v","e":"The company rescinded the job offer after the background check.","c":[106]},{"w":"retrograde","p":"adj/v","e":"Critics called the policy a retrograde step for the country.","c":[106]},{"w":"disperse","p":"v","e":"Police ordered the crowd to disperse.","c":[107]},{"w":"diverge","p":"v","e":"Their opinions began to diverge on economic policy.","c":[107]},{"w":"askance","p":"adv","e":"The manager looked askance at the unusual proposal.","c":[108]},{"w":"awry","p":"adj/adv","e":"Their carefully laid plans went awry at the last minute.","c":[108]},{"w":"careen","p":"v","e":"The out-of-control car careened down the hill.","c":[108]},{"w":"carom","p":"v/n","e":"The ball caromed off the wall and back into play.","c":[108]},{"w":"circuitous","p":"adj","e":"They took a circuitous route to avoid the traffic.","c":[108]},{"w":"circumvent","p":"v","e":"The company found a loophole to circumvent the regulation.","c":[108]},{"w":"gyrate","p":"v","e":"Dancers gyrated wildly to the pounding music.","c":[108]},{"w":"labyrinth","p":"n","e":"Navigating the tax code felt like moving through a labyrinth.","c":[108]},{"w":"meander","p":"v","e":"The river meanders slowly through the valley.","c":[108]},{"w":"oblique","p":"adj","e":"He made only an oblique reference to the scandal.","c":[108]},{"w":"serrated","p":"adj","e":"The knife's serrated edge cut easily through the bread.","c":[108]},{"w":"sidle","p":"v","e":"He sidled up to the counter, hoping not to be noticed.","c":[108]},{"w":"sinuous","p":"adj","e":"The dancer moved with sinuous grace across the stage.","c":[108]},{"w":"undulating","p":"adj","e":"The hikers crossed a series of undulating hills.","c":[108]},{"w":"vortex","p":"n","e":"The canoe was pulled into a dangerous vortex near the falls.","c":[108]},{"w":"cacophony","p":"n","e":"The cacophony of car horns filled the street.","c":[109]},{"w":"clamor","p":"n/v","e":"There was a public clamor for the mayor to resign.","c":[109]},{"w":"din","p":"n","e":"The din of the construction site made conversation impossible.","c":[109]},{"w":"dissonance","p":"n","e":"There was clear dissonance between his words and actions.","c":[109]},{"w":"dissonant","p":"adj","e":"The chord struck a dissonant note that unsettled listeners.","c":[109]},{"w":"raucous","p":"adj","e":"The bar was filled with raucous laughter.","c":[109]},{"w":"strident","p":"adj","e":"Her strident tone made the argument feel like an attack.","c":[109]},{"w":"implacable","p":"adj","e":"The implacable enemy showed no interest in negotiation.","c":[110]},{"w":"inexorable","p":"adj","e":"The inexorable march of time cannot be stopped.","c":[110]},{"w":"intractable","p":"adj","e":"The two sides faced an intractable dispute over land.","c":[110]},{"w":"intransigent","p":"adj","e":"Both sides remained intransigent during the negotiations.","c":[110]},{"w":"obdurate","p":"adj","e":"Despite the pleas, the landlord remained obdurate about the rent.","c":[110]},{"w":"obstinate","p":"adj","e":"He remained obstinate despite all the evidence against him.","c":[110]},{"w":"recalcitrant","p":"adj","e":"The recalcitrant employee refused to follow the new policy.","c":[110]},{"w":"refractory","p":"adj","e":"The refractory patient refused to follow the doctor's advice.","c":[110]},{"w":"renitent","p":"adj","e":"The renitent committee blocked every proposed reform.","c":[110]},{"w":"untoward","p":"adj","e":"Nothing untoward happened during the otherwise routine flight.","c":[110]},{"w":"vexing","p":"adj","e":"The missing files presented a vexing problem for the auditors.","c":[110]},{"w":"craven","p":"adj","e":"His craven refusal to help disappointed his friends.","c":[111]},{"w":"daunt","p":"v","e":"The steep climb didn't daunt the experienced hikers.","c":[111]},{"w":"diffident","p":"adj","e":"Despite his talent, he remained diffident about his abilities.","c":[111]},{"w":"pusillanimous","p":"adj","e":"His pusillanimous refusal to speak up disappointed his friends.","c":[111]},{"w":"recreant","p":"adj/n","e":"The recreant soldier abandoned his post during battle.","c":[111]},{"w":"timorous","p":"adj","e":"The timorous intern hesitated to speak up in meetings.","c":[111]},{"w":"trepidation","p":"n","e":"She approached the interview with a mix of hope and trepidation.","c":[111]},{"w":"disconsolate","p":"adj","e":"She was disconsolate after losing her beloved pet.","c":[112]},{"w":"doleful","p":"adj","e":"The dog gave a doleful look as its owner left for work.","c":[112]},{"w":"dolor","p":"n","e":"The poem expresses deep dolor over lost youth.","c":[112]},{"w":"elegiac","p":"adj","e":"The poet wrote an elegiac tribute to his late mentor.","c":[112]},{"w":"forlorn","p":"adj","e":"He wandered the empty streets with a forlorn expression.","c":[112]},{"w":"lament","p":"v/n","e":"She lamented the loss of the old neighborhood.","c":[112]},{"w":"lugubrious","p":"adj","e":"The lugubrious funeral march matched the somber mood.","c":[112]},{"w":"melancholy","p":"n/adj","e":"A melancholy silence fell over the room after the news.","c":[112]},{"w":"morose","p":"adj","e":"He has been morose ever since he lost his job.","c":[112]},{"w":"plaintive","p":"adj","e":"A plaintive cry echoed through the empty house.","c":[112]},{"w":"threnody","p":"n","e":"The composer wrote a threnody for the victims of the disaster.","c":[112]},{"w":"balk","p":"v","e":"She balked at the idea of working overtime.","c":[113]},{"w":"dither","p":"v/n","e":"He dithered for hours before finally choosing a restaurant.","c":[113]},{"w":"oscillate","p":"v","e":"Her mood seemed to oscillate between joy and anxiety.","c":[113]},{"w":"teeter","p":"v","e":"The old ladder teetered dangerously on the uneven ground.","c":[113]},{"w":"vacillate","p":"v","e":"He vacillated between accepting and declining the offer.","c":[113]},{"w":"waver","p":"v","e":"Her resolve never wavered despite the setbacks.","c":[113]},{"w":"digress","p":"v","e":"The professor digressed into an unrelated story.","c":[114]},{"w":"discursive","p":"adj","e":"His discursive lecture wandered far from the main topic.","c":[114]},{"w":"expatiate","p":"v","e":"He expatiated on the benefits of the new policy for an hour.","c":[114]},{"w":"forage","p":"v/n","e":"The squirrels foraged for nuts before winter.","c":[114]},{"w":"peregrination","p":"n","e":"His peregrinations took him across three continents.","c":[114]},{"w":"sojourn","p":"n/v","e":"They enjoyed a brief sojourn in the countryside.","c":[114]},{"w":"bacchanalian","p":"adj","e":"The party descended into a bacchanalian celebration by midnight.","c":[115]},{"w":"debauchery","p":"n","e":"The emperor was infamous for his nights of debauchery.","c":[115]},{"w":"depraved","p":"adj","e":"The novel depicts the depraved world of the criminal underground.","c":[115]},{"w":"dissipated","p":"adj","e":"After years of dissipated living, he finally sought help.","c":[115]},{"w":"iniquity","p":"n","e":"The novel exposes the iniquity of the slave trade.","c":[115]},{"w":"libertine","p":"n","e":"The novel's protagonist is a notorious libertine.","c":[115]},{"w":"libidinous","p":"adj","e":"The novel was criticized for its libidinous scenes.","c":[115]},{"w":"licentious","p":"adj","e":"The king's licentious court shocked visiting diplomats.","c":[115]},{"w":"reprobate","p":"n/adj","e":"The old reprobate spent his life avoiding responsibility.","c":[115]},{"w":"ribald","p":"adj","e":"The comedian's ribald jokes shocked some of the audience.","c":[115]},{"w":"salacious","p":"adj","e":"The tabloid published salacious details about the affair.","c":[115]},{"w":"sordid","p":"adj","e":"The tabloids revealed the sordid details of the scandal.","c":[115]},{"w":"turpitude","p":"n","e":"The scandal revealed the executive's moral turpitude.","c":[115]}]};
+
+const DEFAULT_NOTES = [
+  "You've got this. Every round counts 💛",
+  "Break time? You've earned a snack.",
+  "Every word you learn is a tiny victory.",
+  "Drink some water, genius 💧",
+  "Your future self is already thanking you.",
+];
+
+const KEY = 'wordgarden.gre.v1';
+const INT = [0, 1, 2, 4, 7, 12];      // days until the next review, per level
+const LEARNED = 3;                    // level at which a word counts as "growing strong"
+const DUE_CAP = 12;                   // max reviews per round
+const PLANTS = ['🌰', '🌱', '🌿', '🪴', '🌷', '🌸'];
+const STAGES = ['seed', 'sprout', 'leafy', 'growing', 'budding', 'in bloom'];
+const SHEETS = { P: '🌞 Positive', N: '🌧️ Negative' };
+const HUES = [140, 18, 265, 42, 195, 335, 95, 8, 220, 300, 170, 60];
+const YAY = ['✓ Correct!', '✓ Correct! 🌸', '✓ Yes! 🌷', '✓ Correct! ✨'];
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rnd = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const today = () => { const d = new Date(); return Math.floor((d - d.getTimezoneOffset() * 60000) / 864e5); };
+const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+
+/* ---------- words ---------- */
+const CATS = DATA.cats.map((c, i) => ({ i, name: c.n, sheet: c.s }));
+const W = DATA.words.map(x => ({ id: x.w.toLowerCase(), word: x.w, pos: x.p, ex: x.e, note: x.t || '', cats: x.c, sheet: CATS[x.c[0]].sheet }));
+const byCat = CATS.map(c => W.filter(w => w.cats.includes(c.i)));
+const hue = ci => HUES[ci % HUES.length];
+const meaningOf = w => w.cats.map(ci => CATS[ci].name).join('  ·  ');
+const sibs = w => W.filter(x => x !== w && x.cats.some(ci => w.cats.includes(ci)));
+const shareCat = (a, b) => a.cats.some(ci => b.cats.includes(ci));
+const pos1 = w => (w.pos || '').split('/')[0].trim();
+
+// find the word inside its example sentence (it may be inflected: concede → conceded)
+function blankify(w) {
+  const parts = w.word.toLowerCase().split('/').map(s => s.trim()).filter(Boolean);
+  const re = /[A-Za-z][A-Za-z'-]*/g;
+  let m;
+  while ((m = re.exec(w.ex))) {
+    const t = m[0].toLowerCase();
+    if (parts.some(p => t.startsWith(p.length > 4 ? p.slice(0, Math.max(4, p.length - 2)) : p)))
+      return { before: w.ex.slice(0, m.index), used: m[0], after: w.ex.slice(m.index + m[0].length) };
+  }
+  return null;
+}
+W.forEach(w => w.blank = w.ex ? blankify(w) : null);
+const exampleHTML = w => w.blank
+  ? `“${esc(w.blank.before)}<b>${esc(w.blank.used)}</b>${esc(w.blank.after)}”`
+  : w.ex ? `“${esc(w.ex)}”` : '';
+
+// alternate positive / negative groups, in spreadsheet order
+const CAT_ORDER = (() => {
+  const p = CATS.filter(c => c.sheet === 'P'), n = CATS.filter(c => c.sheet === 'N'), out = [];
+  for (let i = 0; i < Math.max(p.length, n.length); i++) { p[i] && out.push(p[i].i); n[i] && out.push(n[i].i); }
+  return out;
+})();
+
+/* ---------- state ---------- */
+function fresh() {
+  return { progress: {}, streak: 0, lastDay: null, notesShown: 0, played: false, tab: 'P',
+           settings: { name: '', newPer: 8, sound: true, theme: 'auto', notes: DEFAULT_NOTES.slice() } };
+}
+let S;
+try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+if (!S) S = fresh();
+S.settings = Object.assign(fresh().settings, S.settings);
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+const P = w => (S.progress[w.id] ||= { box: 0, due: 0, seen: 0, right: 0, wrong: 0, last: null });
+const isDue = w => P(w).box > 0 && P(w).due <= today();
+
+function applyTheme() {
+  const t = S.settings.theme;
+  if (t === 'auto') delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = t;
+}
+applyTheme();
+
+/* ---------- soft sounds & petals ---------- */
+let actx;
+function tone(freqs, dur = .18, type = 'sine', vol = .07) {
+  if (!S.settings.sound) return;
+  try {
+    actx ||= new (window.AudioContext || window.webkitAudioContext)();
+    freqs.forEach((f, i) => {
+      const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + i * .09;
+      o.type = type; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(vol, t + .012);
+      g.gain.exponentialRampToValueAtTime(.0001, t + dur + .35);
+      o.connect(g).connect(actx.destination);
+      o.start(t); o.stop(t + dur + .4);
+    });
+  } catch (e) {}
+}
+const sfx = {
+  right: () => tone([659, 880]),
+  half:  () => tone([587, 659], .15, 'triangle', .06),
+  wrong: () => tone([392, 330], .22, 'triangle', .05),
+  done:  () => tone([523, 659, 784, 1047], .25),
+};
+function petals(n = 30) {
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.textContent = rnd(['🌸', '🌷', '🌼', '🍃']);
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.fontSize = (16 + Math.random() * 16) + 'px';
+    p.style.setProperty('--dx', (Math.random() * 160 - 80) + 'px');
+    p.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
+    p.style.animationDuration = (2.5 + Math.random() * 2.5) + 's';
+    p.style.animationDelay = (Math.random() * .8) + 's';
+    document.body.appendChild(p); setTimeout(() => p.remove(), 6000);
+  }
+}
+
+/* ---------- home ---------- */
+function renderHome() {
+  Q = null;
+  const due = W.filter(isDue).length, unseen = W.filter(w => P(w).box === 0).length;
+  const n = Math.min(DUE_CAP, due) + Math.min(unseen, S.settings.newPer) || 10;
+  const bloom = W.filter(w => P(w).box === 5).length, strong = W.filter(w => P(w).box >= LEARNED).length;
+  const planted = W.length - unseen;
+  $('#app').innerHTML = `<div class="enter">
+    <header class="top">
+      <div class="brand">🌷 Word Garden</div><div class="spacer"></div>
+      <button class="icon-btn" id="help" aria-label="How to play">?</button>
+      <button class="icon-btn" id="settings" aria-label="Settings">⚙️</button>
+    </header>
+    <section class="card hero">
+      ${S.settings.name ? `<div class="hi">Hi ${esc(S.settings.name)} 👋</div>` : ''}
+      <h2>${!due && !unseen ? 'All done for today 🎉' : 'Ready to practice?'}</h2>
+      <p>${n} questions · about ${Math.max(2, Math.round(n / 3.5))} min${due ? ` · 💧 ${due} to review` : ''}</p>
+      <button class="btn primary big" id="go">▶  Play</button>
+      <div class="meter"><i style="width:${(planted / W.length * 100).toFixed(1)}%"></i></div>
+      <div class="meter-lbl">🌱 ${planted} of ${W.length} planted · 🪴 ${strong} growing strong · 🌸 ${bloom} in bloom${S.streak ? ` · 🔥 ${S.streak} day${S.streak > 1 ? 's' : ''}` : ''}</div>
+    </section>
+
+    <h3 class="section-title">Look up a word</h3>
+    <input class="search" id="search" type="search" placeholder="🔎  Type a word or a meaning (e.g. copious, abundant)" autocomplete="off">
+    <div id="results"></div>
+
+    <h3 class="section-title">Your garden</h3>
+    <p class="legend" style="text-align:left;margin-top:0">Every word is a seed. Each right answer makes it grow:
+      🌰 → 🌱 → 🌿 → 🪴 → 🌷 → 🌸. Tap a group to see its words.</p>
+    <div class="seg">${['P', 'N'].map(s => `<button data-tab="${s}" class="${S.tab === s ? 'on' : ''}">${SHEETS[s]}</button>`).join('')}</div>
+    <div class="cats" id="beds"></div>
+  </div>`;
+  $('#go').onclick = startSession;
+  $('#help').onclick = helpModal;
+  $('#settings').onclick = renderSettings;
+  $('#search').oninput = e => renderResults(e.target.value);
+  document.querySelectorAll('.seg button').forEach(b => b.onclick = () => {
+    S.tab = b.dataset.tab; save();
+    document.querySelectorAll('.seg button').forEach(x => x.classList.toggle('on', x === b));
+    renderBeds();
+  });
+  renderBeds();
+}
+function renderBeds() {
+  $('#beds').innerHTML = CATS.filter(c => c.sheet === S.tab).map(c => {
+    const ws = byCat[c.i], due = ws.filter(isDue).length;
+    return `<button class="bed tint" style="--h:${hue(c.i)}" data-ci="${c.i}">
+      <div class="bed-head"><b>${esc(c.name)}</b><div class="spacer"></div>
+        <small>${due ? `💧${due} · ` : ''}${ws.filter(w => P(w).box === 5).length}/${ws.length} 🌸</small></div>
+      <div class="mini">${ws.map(w => PLANTS[P(w).box]).join('')}</div></button>`;
+  }).join('');
+  document.querySelectorAll('.bed').forEach(b => b.onclick = () => peekModal(+b.dataset.ci));
+}
+function wordItem(w) {
+  return `<div class="list-item"><div class="row"><b style="font-size:17px">${esc(w.word)}</b><span class="muted">${esc(w.pos)}</span>
+      <div class="spacer"></div><span class="stage">${PLANTS[P(w).box]} ${STAGES[P(w).box]}</span></div>
+    <div><b>${esc(meaningOf(w))}</b></div>
+    ${w.ex ? `<div class="ex">${exampleHTML(w)}</div>` : ''}${w.note ? `<div class="muted">📝 ${esc(w.note)}</div>` : ''}</div>`;
+}
+function renderResults(q) {
+  q = norm(q);
+  if (q.length < 2) return $('#results').innerHTML = '';
+  const hits = W.filter(w => norm(w.word).includes(q) || norm(meaningOf(w)).includes(q))
+    .sort((a, b) => norm(b.word).startsWith(q) - norm(a.word).startsWith(q)).slice(0, 20);
+  $('#results').innerHTML = `<div class="card" style="padding:4px 20px;margin-top:10px">${hits.length ? hits.map(wordItem).join('') : '<p class="muted">No words found.</p>'}</div>`;
+}
+function modal(html) {
+  const m = document.createElement('div');
+  m.className = 'modal';
+  m.innerHTML = `<div class="card enter">${html}<button class="btn primary big" style="margin-top:16px" data-close>OK</button></div>`;
+  m.onclick = e => { if (e.target === m || e.target.hasAttribute('data-close')) m.remove(); };
+  document.body.appendChild(m);
+}
+function helpModal() {
+  modal(`<h2 style="font-size:26px;margin-bottom:4px">How to play</h2>
+    <p class="muted" style="margin:0 0 6px">Press <b>Play</b> and answer the questions. It's fine to guess when you don't know a word: you learn it from the answer.</p>
+    <div class="legend-row"><span class="k" style="background:var(--good)">✓</span><div><b>Correct</b><br><span class="muted">That's the exact answer.</span></div></div>
+    <div class="legend-row"><span class="k" style="background:var(--half)">½</span><div><b>Half right</b><br><span class="muted">Close, but not exact: a synonym from the same group, or a meaning with the right tone (positive/negative) but the wrong group.</span></div></div>
+    <div class="legend-row"><span class="k" style="background:var(--bad)">✗</span><div><b>Wrong</b><br><span class="muted">You'll always see the right answer.</span></div></div>
+    <p class="muted" style="margin:6px 0 0">🌰 Every word starts as a seed. Each ✓ makes it grow one step, all the way to 🌸. A ✗ sends it back to 🌱, and 💧 means it's time to review it.</p>`);
+}
+function peekModal(ci) {
+  const c = CATS[ci];
+  modal(`<span class="tag tint" style="--h:${hue(ci)}">${SHEETS[c.sheet]}</span>
+    <h2 style="margin:8px 0 4px">${esc(c.name)}</h2>
+    ${byCat[ci].map(wordItem).join('')}`);
+}
+
+/* ---------- building a round ---------- */
+let Q = null;
+function pickNew(k) {           // new words come from ~3 groups at a time, alternating between them
+  const open = CAT_ORDER.filter(ci => byCat[ci].some(w => P(w).box === 0)).slice(0, 3);
+  const lists = open.map(ci => shuffle(byCat[ci].filter(w => P(w).box === 0))), out = new Set();
+  while (out.size < k && lists.some(l => l.length)) lists.forEach(l => { if (l.length && out.size < k) out.add(l.shift()); });
+  return [...out];
+}
+function pickKind(w) {
+  const b = P(w).box;
+  let pool = b <= 0 ? ['meaning'] : b === 1 ? ['meaning', 'blank'] : b === 2 ? ['blank', 'word', 'meaning'] : b === 3 ? ['blank', 'type', 'word'] : ['type', 'blank'];
+  if (!w.blank) pool = pool.filter(k => k !== 'blank' && k !== 'type');
+  return rnd(pool.length ? pool : ['meaning', 'word']);
+}
+function buildQueue() {
+  const due = shuffle(W.filter(isDue)).sort((a, b) => P(a).box - P(b).box).slice(0, DUE_CAP);
+  const unseen = pickNew(S.settings.newPer);
+  const q = [];
+  while (due.length || unseen.length) {
+    if (unseen.length) q.push({ w: unseen.shift(), kind: 'meaning' });
+    if (due.length) { const w = due.shift(); q.push({ w, kind: pickKind(w) }); }
+  }
+  if (!q.length)
+    shuffle(W.filter(w => P(w).box > 0)).sort((a, b) => P(a).box - P(b).box).slice(0, 10)
+      .forEach(w => q.push({ w, kind: pickKind(w), practice: true }));
+  return q;
+}
+function startSession() {
+  Q = { queue: buildQueue(), i: 0, combo: 0, right: 0, half: 0, answered: 0, missed: new Map(), grown: new Map(), locked: false };
+  showQuestion();
+}
+
+/* ---------- options ----------
+   Each option is right, half (close but not exact) or wrong. */
+function optionsFor(w, kind) {
+  if (kind === 'meaning') {
+    const right = CATS[rnd(w.cats)];
+    const same = rnd(CATS.filter(c => c.sheet === w.sheet && !w.cats.includes(c.i)));
+    const other = shuffle(CATS.filter(c => c.sheet !== w.sheet)).slice(0, 2);
+    return shuffle([{ c: right, status: 'right' }, { c: same, status: 'half' }, ...other.map(c => ({ c, status: 'wrong' }))])
+      .map(({ c, status }) => ({ label: c.name, status, cat: c, h: hue(c.i),
+        who: status === 'right' ? `Same group: ${sibs(w).filter(x => x.cats.includes(c.i)).slice(0, 5).map(x => x.word).join(', ') || 'only this word'}`
+          : `Words here: ${shuffle(byCat[c.i].slice()).slice(0, 3).map(x => x.word).join(', ')}` }));
+  }
+  if (kind === 'word') {
+    const pool = W.filter(x => x !== w && !shareCat(x, w));
+    const same = rnd(pool.filter(x => x.sheet === w.sheet));
+    const other = shuffle(pool.filter(x => x.sheet !== w.sheet)).slice(0, 2);
+    return shuffle([{ x: w, status: 'right' }, { x: same, status: 'half' }, ...other.map(x => ({ x, status: 'wrong' }))])
+      .map(({ x, status }) => ({ label: x.word, status, owner: x, who: `means: ${meaningOf(x)}` }));
+  }
+  // blank: one synonym from the same group is half right
+  const syn = shuffle(sibs(w).filter(x => norm(x.word) !== norm(w.word)))[0];
+  const others = shuffle(W.filter(x => x !== w && !shareCat(x, w)));
+  const samePos = others.filter(x => pos1(x) === pos1(w));
+  const picks = [{ x: w, status: 'right' }];
+  if (syn) picks.push({ x: syn, status: 'half' });
+  for (const x of [...samePos, ...others]) { if (picks.length >= 4) break; if (!picks.some(p => p.x === x)) picks.push({ x, status: 'wrong' }); }
+  return shuffle(picks).map(({ x, status }) => ({ label: x.word, status, owner: x, who: `means: ${meaningOf(x)}` }));
+}
+
+/* ---------- question screens ---------- */
+function shell(inner) {
+  const pct = Math.round(Q.i / Q.queue.length * 100);
+  $('#app').innerHTML = `
+    <div class="gbar">
+      <button class="icon-btn" id="quit" aria-label="Stop">✕</button>
+      <div class="prog"><i style="width:${pct}%"></i></div>
+      <span class="count">${Q.i + 1}/${Q.queue.length}</span>
+    </div>
+    <div class="enter" id="q">${inner}</div><div class="game-pad"></div>`;
+  $('#quit').onclick = () => Q.answered ? finish() : renderHome();
+  window.scrollTo(0, 0);
+}
+function topHint(c) {
+  if (!S.played) return `<p class="hint">👆 Tap the answer you think is right. It's okay to guess!</p>`;
+  if (c.retry) return `<span class="pill">Try this one again</span>`;
+  if (P(c.w).box === 0) return `<span class="pill">New word · take a guess</span>`;
+  return '';
+}
+const sentenceHTML = w => `<p class="sentence">${esc(w.blank.before)}<span class="blank">&nbsp;</span>${esc(w.blank.after)}</p>
+  <p class="hint">${esc(w.pos)}${norm(w.blank.used) !== norm(w.word.split('/')[0]) ? ' · the word may appear in another form (-ed, -s…)' : ''}</p>`;
+
+function showQuestion() {
+  if (Q.i >= Q.queue.length) return finish();
+  const c = Q.queue[Q.i], w = c.w;
+  if (c.kind === 'type') return typeQuestion(c);
+  const opts = optionsFor(w, c.kind);
+  const right = opts.find(o => o.status === 'right');
+  const prompt = {
+    meaning: `<h1 class="prompt">What does <b>${esc(w.word)}</b> mean?</h1>`,
+    word:    `<h1 class="prompt">Which word means <b>${esc(right.label === w.word ? meaningOf(w) : right.label)}</b>?</h1>`,
+    blank:   `<h1 class="prompt">Which word fills the blank?</h1>${sentenceHTML(w)}`,
+  }[c.kind];
+  shell(`${topHint(c)}${prompt}
+    <div class="opts">${opts.map((o, i) => `<button class="opt" data-i="${i}">
+      <span class="k">${i + 1}</span><span>${o.h != null ? `<span class="tag tint" style="--h:${o.h}">${esc(o.label)}</span>` : esc(o.label)}<span class="who" hidden></span></span>
+    </button>`).join('')}</div>`);
+  document.querySelectorAll('.opt').forEach(b => b.onclick = () => answerMC(c, opts, +b.dataset.i));
+}
+
+function answerMC(c, opts, pick) {
+  if (Q.locked) return;
+  Q.locked = true;
+  document.querySelectorAll('.opt').forEach((b, i) => {
+    const o = opts[i];
+    b.disabled = true;
+    if (o.status === 'wrong' && i !== pick) { b.classList.add('dim'); return; }
+    b.classList.add(o.status === 'wrong' ? 'bad' : o.status);
+    b.querySelector('.k').textContent = o.status === 'right' ? '✓' : o.status === 'half' ? '½' : '✗';
+    const who = b.querySelector('.who');
+    who.hidden = false; who.textContent = o.who;
+    if (i === pick) {
+      who.insertAdjacentHTML('beforebegin', '<span class="yours">← your answer</span>');
+      if (o.status === 'wrong') b.classList.add('shake');
+    }
+  });
+  result(c, opts[pick].status, { chosen: opts[pick], halfOpts: opts.filter(o => o.status === 'half') });
+}
+
+function lev(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+function typeQuestion(c) {
+  const w = c.w, target = w.blank.used;
+  let shown = 1;
+  const letters = () => [...target].map((ch, i) => i < shown ? ch : '_').join('');
+  shell(`${topHint(c)}<h1 class="prompt">Type the missing word</h1>${sentenceHTML(w)}
+    <p class="hint">Meaning: <span class="tag tint" style="--h:${hue(w.cats[0])}">${esc(meaningOf(w))}</span></p>
+    <input class="typein" id="ans" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Type here…">
+    <div class="letters" id="letters">${letters()}</div>
+    <div id="tbtns"><div class="row"><button class="btn ghost" id="hint">Show a letter</button><div class="spacer"></div>
+      <button class="btn primary" id="check">Check</button></div>
+      <p class="hint" style="margin-top:14px"><button id="idk" style="text-decoration:underline;color:var(--muted)">I don't know</button></p></div>`);
+  const inp = $('#ans');
+  setTimeout(() => inp.focus(), 50);
+  $('#hint').onclick = () => { shown = Math.min(shown + 1, target.length - 1); $('#letters').textContent = letters(); c.hinted = true; inp.focus(); };
+  const end = (status, info) => {
+    if (Q.locked) return;
+    Q.locked = true;
+    inp.disabled = true; $('#tbtns').remove();
+    inp.style.borderColor = `var(--${status === 'right' ? 'good' : status})`;
+    result(c, status, info);
+  };
+  $('#idk').onclick = () => end('bad', {});
+  $('#check').onclick = () => {
+    const a = norm(inp.value);
+    if (!a) return inp.focus();
+    const forms = [target, ...w.word.split('/')].map(norm);
+    const dist = Math.min(...forms.map(f => lev(a, f)));
+    if (dist === 0 || (dist === 1 && a.length >= 5)) return end(c.hinted ? 'half' : 'right', { typo: dist > 0, hinted: c.hinted });
+    const sib = sibs(w).find(x => x.word.split('/').some(p => { const n = norm(p); return a === n || (a.length > 4 && a.startsWith(n.slice(0, Math.max(4, n.length - 2)))); }));
+    if (sib) return end('half', { typedSibling: sib });
+    end('bad', { typed: inp.value.trim() });
+  };
+  inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); $('#check')?.click(); } };
+}
+
+/* ---------- grading (Leitner levels) ---------- */
+function grade(c, status) {
+  const w = c.w, p = P(w), t = today(), before = p.box;
+  p.seen++; p.last = t;
+  if (status === 'right') p.right++; else if (status === 'bad') p.wrong++;
+  if (c.retry) { /* already rescheduled when first missed */ }
+  else if (c.practice) { if (status !== 'right') { p.box = 1; p.due = t + 1; } }
+  else if (status === 'right') { p.box = Math.min(5, p.box + 1); p.due = t + INT[p.box]; }
+  else if (status === 'half') { p.box = Math.max(1, p.box); p.due = t + 1; }
+  else { p.box = 1; p.due = t + 1; }
+  Q.answered++;
+  if (status === 'right') { Q.right++; Q.combo++; } else { Q.combo = 0; Q.missed.set(w.id, w); }
+  if (status === 'half') Q.half++;
+  if (status !== 'right' && !c.retry)       // ask again a few questions later
+    Q.queue.splice(Math.min(Q.queue.length, Q.i + 3), 0, { w, kind: w.blank && c.kind !== 'meaning' ? 'blank' : 'meaning', retry: true });
+  if (p.box > before && status === 'right') Q.grown.set(w.id, [Q.grown.has(w.id) ? Q.grown.get(w.id)[0] : before, p.box]);
+  S.played = true;
+  save();
+  return { before, after: p.box };
+}
+
+/* ---------- result panel: always shows the exact answer ---------- */
+function result(c, status, info = {}) {
+  if (status === 'wrong') status = 'bad';
+  const { before, after } = grade(c, status);
+  const w = c.w, o = info.chosen && (info.chosen.owner || info.chosen.cat);
+  const bloomed = after === 5 && before < 5;
+  const same = sibs(w).map(x => x.word);
+  const answer = `<b>${esc(w.word)}</b> <span class="muted">(${esc(w.pos)})</span> means <b>${esc(meaningOf(w))}</b>
+    ${w.ex ? `<div class="ex">${exampleHTML(w)}</div>` : ''}${w.note ? `<div class="muted">📝 ${esc(w.note)}</div>` : ''}
+    ${same.length ? `<div class="muted" style="font-size:14px;margin-top:4px">Same meaning: ${esc(same.slice(0, 6).join(', '))}${same.length > 6 ? ` +${same.length - 6} more` : ''}</div>` : ''}`;
+  const growLine = before === 0 && status !== 'right'
+    ? `<div class="grow"><span class="pl">🌱</span> Seed planted. Get it right next time to make it grow!</div>`
+    : after > before ? `<div class="grow">${PLANTS[before]} → <span class="pl">${PLANTS[after]}</span> ${bloomed ? `${esc(w.word)} is in full bloom!` : `${esc(w.word)} grew!`}</div>`
+    : after < before ? `<div class="grow">${PLANTS[before]} → <span class="pl">${PLANTS[after]}</span> ${esc(w.word)} wilted a little</div>` : '';
+  const tone = x => x.sheet === 'P' ? 'positive' : 'negative';
+  let head, extra = '';
+  if (status === 'right') {
+    head = rnd(YAY) + (Q.combo >= 3 ? `  🔥 ${Q.combo} in a row` : '');
+    const h = (info.halfOpts || [])[0];
+    if (info.typo) extra = `Small typo: it's spelled <b>${esc(w.blank ? w.blank.used : w.word)}</b>.`;
+    else if (h && c.kind === 'blank')
+      extra = `½ <b>There was a half-right option:</b> <b>${esc(h.owner.word)}</b> also means ${esc(meaningOf(h.owner))}, so it's a synonym. The sentence uses <b>${esc(w.word)}</b>.`;
+    else if (h && c.kind === 'meaning')
+      extra = `½ <b>There was a half-right option:</b> “${esc(h.label)}” has the right tone (${tone(w)}), but it's a different meaning.`;
+    else if (h && c.kind === 'word')
+      extra = `½ <b>There was a half-right option:</b> <b>${esc(h.label)}</b> is also a ${tone(w)} word, but it means ${esc(meaningOf(h.owner))}.`;
+    if (bloomed) { sfx.done(); petals(24); } else sfx.right();
+  } else if (status === 'half') {
+    head = '½ Half right';
+    if (info.hinted) extra = `You got it, but with letter hints. Next time try without!`;
+    else if (info.typedSibling) extra = `<b>${esc(info.typedSibling.word)}</b> is a synonym (it also means ${esc(meaningOf(info.typedSibling))}), but the sentence uses <b>${esc(w.word)}</b>.`;
+    else if (c.kind === 'blank') extra = `<b>${esc(o.word)}</b> is a synonym: it also means ${esc(meaningOf(o))}. Close! But the sentence uses <b>${esc(w.word)}</b>.`;
+    else if (c.kind === 'meaning') extra = `“${esc(o.name)}” has the right tone (${tone(w)}), but it's a different meaning.`;
+    else extra = `<b>${esc(o.word)}</b> is also a ${tone(w)} word, but it means ${esc(meaningOf(o))}.`;
+    sfx.half();
+  } else {
+    head = '✗ Not quite';
+    if (info.typed) extra = `You wrote “${esc(info.typed)}”.`;
+    else if (o && c.kind === 'meaning') extra = `You picked “${esc(o.name)}”, which is a ${o.sheet === 'P' ? 'positive' : 'negative'} meaning. <b>${esc(w.word)}</b> is ${tone(w)}.`;
+    else if (o) extra = `You picked <b>${esc(o.word)}</b>, which means ${esc(meaningOf(o))}.`;
+    sfx.wrong();
+  }
+  const again = status !== 'right' && !c.retry ? `<div class="muted" style="font-size:14px;margin-top:8px">This word will come back in a few questions.</div>` : '';
+  const sheet = document.createElement('div');
+  sheet.className = `sheet ${status === 'right' ? 'good' : status}`;
+  sheet.innerHTML = `<div class="in">
+    <div class="head">${head}</div>
+    <div class="answer">${status === 'right' ? '' : '<b>Right answer:</b> '}${answer}</div>
+    ${growLine}
+    ${extra ? `<div class="extra">${extra}</div>` : ''}${again}
+    <button class="btn" id="next">Continue</button></div>`;
+  document.body.appendChild(sheet);
+  $('.game-pad').style.height = (sheet.offsetHeight + 30) + 'px';
+  $('#next').onclick = () => { sheet.remove(); Q.locked = false; Q.i++; showQuestion(); };
+  setTimeout(() => $('#next')?.focus({ preventScroll: true }), 50);
+}
+
+/* ---------- end of round ---------- */
+function finish() {
+  document.querySelector('.sheet')?.remove();
+  const t = today();
+  if (Q.answered && S.lastDay !== t) { S.streak = S.lastDay === t - 1 ? S.streak + 1 : 1; S.lastDay = t; }
+  const notes = S.settings.notes.filter(Boolean);
+  const note = Q.answered && notes.length ? notes[S.notesShown++ % notes.length] : '';
+  save();
+  const acc = Q.answered ? Q.right / Q.answered : 0;
+  const missed = [...Q.missed.values()];
+  $('#app').innerHTML = `<div class="card center enter">
+    <div class="big-emoji">${acc >= .8 ? '🌸' : acc >= .5 ? '🌷' : '🌱'}</div>
+    <h1 style="font-size:30px;margin-top:6px">${acc >= .8 ? 'Amazing round!' : acc >= .5 ? 'Nice work!' : 'Good practice!'}</h1>
+    <p class="muted">${acc < .5 ? 'Mistakes now mean fewer mistakes in the exam.' : 'Keep it up. A little every day is the trick.'}</p>
+    <div class="stats">
+      <div class="stat"><b style="color:var(--good)">${Q.right}</b><span>correct</span></div>
+      <div class="stat"><b style="color:var(--half)">${Q.half}</b><span>half right</span></div>
+      <div class="stat"><b>${Q.grown.size}🌱</b><span>grew</span></div>
+    </div>
+    ${Q.grown.size ? `<div class="muted" style="text-align:left;font-weight:800;font-size:14px">What grew today 🌱</div>
+      <div class="review">${[...Q.grown].map(([id, [a, b]]) => `<div>${PLANTS[a]} → ${PLANTS[b]} &nbsp;<b>${esc(W.find(w => w.id === id).word)}</b></div>`).join('')}</div>` : ''}
+    ${missed.length ? `<div class="muted" style="text-align:left;font-weight:800;font-size:14px">Words to look at again</div>
+      <div class="review">${missed.map(w => `<div><b>${esc(w.word)}</b> = ${esc(meaningOf(w))}${w.ex ? `<div class="ex">${exampleHTML(w)}</div>` : ''}</div>`).join('')}</div>` : ''}
+    ${note ? `<div class="note">${esc(note)}<div class="sig">♥</div></div>` : ''}
+    <div class="row" style="justify-content:center;flex-wrap:wrap">
+      <button class="btn ghost" id="home">Home</button>
+      <button class="btn primary" id="again">Play again</button></div></div>`;
+  $('#home').onclick = renderHome;
+  $('#again').onclick = startSession;
+  if (Q.answered) { sfx.done(); if (acc >= .5) petals(); }
+  Q = null;
+}
+
+/* ---------- settings ---------- */
+function renderSettings() {
+  const st = S.settings;
+  $('#app').innerHTML = `<div class="enter">
+    <header class="top"><button class="icon-btn" id="back" aria-label="Back">←</button><div class="brand">Settings</div></header>
+    <div class="card">
+      <label class="f">Your name <small>Optional. Shown on the home screen.</small></label>
+      <input type="text" id="name" value="${esc(st.name)}" placeholder="optional">
+      <label class="f">New words per round <small>${W.length} words in total. More new words = longer rounds.</small></label>
+      <input type="number" id="newPer" min="1" max="30" value="${st.newPer}">
+      <label class="f">Encouragement notes <small>One per line. One shows up at the end of each round.</small></label>
+      <textarea class="notes" id="notes">${esc(st.notes.join('\n'))}</textarea>
+      <div class="row" style="margin-top:18px">
+        <label class="row" style="font-weight:800"><input type="checkbox" id="sound" ${st.sound ? 'checked' : ''}> Sounds</label>
+        <div class="spacer"></div>
+        <select id="theme" style="width:auto">${['auto', 'light', 'dark'].map(t => `<option ${t === st.theme ? 'selected' : ''}>${t}</option>`).join('')}</select>
+      </div>
+      <div class="row" style="margin-top:24px">
+        <button class="btn ghost" id="reset">Reset progress</button><div class="spacer"></div>
+        <button class="btn primary" id="saveBtn">Save</button></div>
+    </div></div>`;
+  $('#back').onclick = renderHome;
+  $('#reset').onclick = e => {
+    if (e.target.dataset.sure) { S.progress = {}; S.streak = 0; S.lastDay = null; S.played = false; save(); renderHome(); }
+    else { e.target.dataset.sure = 1; e.target.textContent = 'Tap again to confirm'; e.target.style.borderColor = 'var(--bad)'; }
+  };
+  $('#saveBtn').onclick = () => {
+    st.name = $('#name').value.trim();
+    st.newPer = Math.max(1, Math.min(30, +$('#newPer').value || 8));
+    st.notes = $('#notes').value.split('\n').map(s => s.trim()).filter(Boolean);
+    st.sound = $('#sound').checked;
+    st.theme = $('#theme').value;
+    save(); applyTheme(); renderHome();
+  };
+}
+
+/* ---------- keyboard: 1–4 to answer, Enter to continue ---------- */
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input,textarea,select')) return;
+  if (e.key === 'Enter' && $('#next')) { e.preventDefault(); $('#next').click(); return; }
+  const n = parseInt(e.key, 10);
+  if (n >= 1) document.querySelector(`.opt[data-i="${n - 1}"]:not(:disabled)`)?.click();
+});
+
+renderHome();
+</script>
+</body>
+</html>
