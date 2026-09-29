@@ -168,6 +168,65 @@ textarea.notes{font-family:Nunito,sans-serif; font-size:15px; min-height:130px}
 .shake{animation:shake .35s}
 @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
 
+/* ---------- the garden ---------- */
+:root{--sky1:#bfe4f6; --sky2:#eaf6fb; --grass:#9ccc7c; --grass2:#8cc06b; --picket:#fffaf0; --wood:#c98f58; --wood-d:#9a6436; --soil:#7a5134; --sign:#e2b477; --sign-ink:#4a2f1a}
+.garden.rainy{--sky1:#a9b6c4; --sky2:#dbe2e9}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sky1:#1b2440; --sky2:#34406a; --grass:#3f6a3a; --grass2:#375f33; --picket:#cfc6b4; --wood:#8a5f3a; --wood-d:#5f3f24; --soil:#4d3322}
+  :root:not([data-theme="light"]) .garden.rainy{--sky1:#1c2230; --sky2:#3a4456}}
+:root[data-theme="dark"]{--sky1:#1b2440; --sky2:#34406a; --grass:#3f6a3a; --grass2:#375f33; --picket:#cfc6b4; --wood:#8a5f3a; --wood-d:#5f3f24; --soil:#4d3322}
+:root[data-theme="dark"] .garden.rainy{--sky1:#1c2230; --sky2:#3a4456}
+.garden{border-radius:26px; overflow:hidden; box-shadow:var(--shadow); margin-top:12px; background:var(--grass)}
+.sky{position:relative; height:110px; background:linear-gradient(var(--sky1), var(--sky2)); overflow:hidden}
+.sky span{position:absolute; line-height:1}
+.sun{right:22px; top:14px; font-size:44px; animation:glow 6s ease-in-out infinite}
+.moon{display:none; right:24px; top:16px; font-size:38px}
+.cloud{font-size:40px; opacity:.95; animation:drift 60s linear infinite}
+.cloud.c1{top:12px; left:-60px}
+.cloud.c2{top:44px; left:-60px; font-size:32px; animation-duration:85s; animation-delay:-40s}
+.rain{position:absolute; inset:0; background:repeating-linear-gradient(105deg, transparent 0 14px, rgba(255,255,255,.45) 14px 15px); background-size:40px 40px; animation:rain .6s linear infinite; opacity:.6}
+.critter{font-size:22px; top:60px; left:10%}
+.critter.fly{animation:flutter 14s ease-in-out infinite}
+.critter.bee{font-size:18px; top:74px; animation:buzz 11s ease-in-out infinite; animation-delay:-4s}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .sun{display:none} :root:not([data-theme="light"]) .moon{display:block}}
+:root[data-theme="dark"] .sun{display:none} :root[data-theme="dark"] .moon{display:block}
+.fence{height:40px; margin-top:-26px; position:relative;
+  background:
+    linear-gradient(to bottom, transparent 13px, var(--picket) 13px 18px, transparent 18px 28px, var(--picket) 28px 33px, transparent 33px),
+    repeating-linear-gradient(90deg, var(--picket) 0 12px, transparent 12px 22px);
+  -webkit-mask:linear-gradient(#000,#000); filter:drop-shadow(0 2px 0 rgba(0,0,0,.12))}
+.fence::after{content:""; position:absolute; left:0; right:0; bottom:-1px; height:8px; background:var(--grass)}
+.lawn{display:grid; gap:20px; padding:10px 14px 22px;
+  background:
+    radial-gradient(circle at 30% 40%, var(--grass2) 0 2px, transparent 3px) 0 0/26px 22px,
+    radial-gradient(circle at 70% 70%, var(--grass2) 0 2px, transparent 3px) 0 0/34px 30px,
+    var(--grass)}
+button.bed{display:block; width:100%; padding:0; text-align:left; background:none; border-radius:16px; transition:transform .15s}
+button.bed:hover{transform:translateY(-3px)}
+.sign{display:inline-flex; align-items:baseline; gap:8px; position:relative; z-index:1; margin:0 0 -6px 16px; padding:6px 12px; border-radius:8px;
+  background:var(--sign); color:var(--sign-ink); box-shadow:0 3px 0 var(--wood-d); max-width:calc(100% - 32px)}
+.sign b{font-family:Fraunces,serif; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.sign small{font-size:12px; font-weight:800; opacity:.75; white-space:nowrap}
+.soil{display:flex; flex-wrap:wrap; align-items:flex-end; gap:0 3px; min-height:58px; padding:16px 10px 8px;
+  border:7px solid var(--wood); border-bottom-width:9px; border-radius:14px;
+  background:
+    radial-gradient(rgba(0,0,0,.22) 1.2px, transparent 2px) 0 0/11px 11px,
+    radial-gradient(rgba(255,255,255,.10) 1px, transparent 2px) 5px 6px/15px 13px,
+    var(--soil);
+  box-shadow:inset 0 5px 10px rgba(0,0,0,.35), 0 4px 0 var(--wood-d)}
+.p{display:inline-block; line-height:1.1; transform-origin:50% 100%; filter:drop-shadow(0 2px 0 rgba(0,0,0,.28)); transition:transform .3s}
+.p.s0{font-size:12px; opacity:.8} .p.s1{font-size:16px} .p.s2{font-size:19px} .p.s3{font-size:22px} .p.s4{font-size:24px}
+.p.s5{font-size:26px; animation:sway 3.5s ease-in-out infinite alternate}
+.p.s5:nth-child(3n){animation-delay:-1.2s} .p.s5:nth-child(3n+1){animation-delay:-2.3s}
+.p.thirsty{transform:rotate(-16deg); filter:saturate(.55) drop-shadow(0 2px 0 rgba(0,0,0,.28))}
+button.bed:hover .p:not(.thirsty){transform:translateY(-2px)}
+@keyframes sway{from{transform:rotate(-5deg)} to{transform:rotate(5deg)}}
+@keyframes drift{from{transform:translateX(0)} to{transform:translateX(calc(640px + 120px))}}
+@keyframes rain{to{background-position:-10px 40px}}
+@keyframes glow{50%{transform:scale(1.08) rotate(8deg)}}
+@keyframes flutter{0%,100%{transform:translate(0,0) scaleX(1)} 25%{transform:translate(35vw,-30px) scaleX(1)} 50%{transform:translate(60vw,10px) scaleX(-1)} 75%{transform:translate(20vw,-20px) scaleX(-1)}}
+@keyframes buzz{0%,100%{transform:translate(55vw,0)} 30%{transform:translate(25vw,-12px)} 60%{transform:translate(5vw,6px)} 80%{transform:translate(40vw,-8px)}}
+@media (min-width:700px){@keyframes flutter{0%,100%{transform:translate(0,0)} 25%{transform:translate(220px,-30px)} 50%{transform:translate(400px,10px) scaleX(-1)} 75%{transform:translate(120px,-20px) scaleX(-1)}}}
+
 /* GRE additions */
 .search{width:100%; font:inherit; font-size:16px; padding:14px 16px; border-radius:16px; border:2px solid var(--line); background:var(--card); color:var(--ink); margin-top:10px}
 .search:focus{border-color:var(--sage); outline:none}
@@ -341,7 +400,7 @@ function renderHome() {
     <p class="legend" style="text-align:left;margin-top:0">Every word is a seed. Each right answer makes it grow:
       🌰 → 🌱 → 🌿 → 🪴 → 🌷 → 🌸. Tap a group to see its words.</p>
     <div class="seg">${['P', 'N'].map(s => `<button data-tab="${s}" class="${S.tab === s ? 'on' : ''}">${SHEETS[s]}</button>`).join('')}</div>
-    <div class="cats" id="beds"></div>
+    <div class="garden" id="garden"></div>
   </div>`;
   $('#go').onclick = startSession;
   $('#help').onclick = helpModal;
@@ -355,13 +414,24 @@ function renderHome() {
   renderBeds();
 }
 function renderBeds() {
-  $('#beds').innerHTML = CATS.filter(c => c.sheet === S.tab).map(c => {
-    const ws = byCat[c.i], due = ws.filter(isDue).length;
-    return `<button class="bed tint" style="--h:${hue(c.i)}" data-ci="${c.i}">
-      <div class="bed-head"><b>${esc(c.name)}</b><div class="spacer"></div>
-        <small>${due ? `💧${due} · ` : ''}${ws.filter(w => P(w).box === 5).length}/${ws.length} 🌸</small></div>
-      <div class="mini">${ws.map(w => PLANTS[P(w).box]).join('')}</div></button>`;
-  }).join('');
+  const cats = CATS.filter(c => c.sheet === S.tab), ws = cats.flatMap(c => byCat[c.i]);
+  const rainy = S.tab === 'N', blooms = ws.some(w => P(w).box === 5), buzzing = ws.some(w => P(w).box >= 3);
+  $('#garden').className = `garden ${rainy ? 'rainy' : ''}`;
+  $('#garden').innerHTML = `
+    <div class="sky" aria-hidden="true">
+      <span class="sun">${rainy ? '🌥️' : '☀️'}</span><span class="moon">🌙</span>
+      <span class="cloud c1">☁️</span><span class="cloud c2">${rainy ? '🌧️' : '☁️'}</span>
+      ${rainy ? '<div class="rain"></div>' : ''}
+      ${blooms ? '<span class="critter fly">🦋</span>' : ''}${buzzing ? '<span class="critter bee">🐝</span>' : ''}
+    </div>
+    <div class="fence" aria-hidden="true"></div>
+    <div class="lawn">${cats.map(c => {
+      const ws = byCat[c.i], due = ws.filter(isDue).length;
+      return `<button class="bed" data-ci="${c.i}" aria-label="${esc(c.name)}: see its words">
+        <div class="sign"><b>${esc(c.name)}</b><small>${ws.filter(w => P(w).box === 5).length}/${ws.length} 🌸${due ? ` · 💧${due}` : ''}</small></div>
+        <div class="soil">${ws.map(w => `<span class="p s${P(w).box}${isDue(w) ? ' thirsty' : ''}" title="${esc(w.word)}">${PLANTS[P(w).box]}</span>`).join('')}</div>
+      </button>`;
+    }).join('')}</div>`;
   document.querySelectorAll('.bed').forEach(b => b.onclick = () => peekModal(+b.dataset.ci));
 }
 function wordItem(w) {
