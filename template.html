@@ -102,6 +102,7 @@ header.top{display:flex; align-items:center; gap:10px; margin-bottom:20px}
 .opt:not(:disabled):active{transform:translateY(2px)}
 .opt .k{flex:none; width:28px; height:28px; border-radius:9px; display:grid; place-items:center; font-size:14px; font-weight:800; background:var(--bg2); color:var(--muted)}
 .opt .who{display:block; font-size:14px; font-weight:700; margin-top:4px}
+.opt .who b{font-weight:800; color:var(--ink)}
 .opt:disabled{cursor:default}
 .opt.dim{opacity:.72}
 .opt.dim .who{color:var(--muted); font-weight:600}
@@ -543,15 +544,16 @@ function optionsFor(w, kind, cat) {
     const other = shuffle(CATS.filter(c => c.sheet !== w.sheet)).slice(0, 2);
     return shuffle([{ c: right, status: 'right' }, { c: same, status: 'half' }, ...other.map(c => ({ c, status: 'wrong' }))])
       .map(({ c, status }) => ({ label: c.name, status, cat: c, h: hue(c.i),
-        who: status === 'right' ? `Same group: ${sibs(w).filter(x => x.cats.includes(c.i)).slice(0, 5).map(x => x.word).join(', ') || 'only this word'}`
-          : `Words here: ${shuffle(byCat[c.i].slice()).slice(0, 3).map(x => x.word).join(', ')}` }));
+        who: status === 'right'
+          ? [w, ...shuffle(sibs(w).filter(x => x.cats.includes(c.i))).slice(0, 2)].map(x => `<b>${esc(x.word)}</b>: ${esc(defOf(x))}`).join('<br>')
+          : shuffle(byCat[c.i].slice()).slice(0, 2).map(x => `<b>${esc(x.word)}</b>: ${esc(defOf(x))}`).join('<br>') }));
   }
   if (kind === 'word') {
     const pool = W.filter(x => x !== w && !shareCat(x, w));
     const same = rnd(pool.filter(x => x.sheet === w.sheet));
     const other = shuffle(pool.filter(x => x.sheet !== w.sheet)).slice(0, 2);
     return shuffle([{ x: w, status: 'right' }, { x: same, status: 'half' }, ...other.map(x => ({ x, status: 'wrong' }))])
-      .map(({ x, status }) => ({ label: x.word, status, owner: x, who: `means: ${defOf(x)}` }));
+      .map(({ x, status }) => ({ label: x.word, status, owner: x, who: `means: ${esc(defOf(x))}` }));
   }
   // blank: one synonym from the same group is half right
   const syn = shuffle(sibs(w).filter(x => norm(x.word) !== norm(w.word)))[0];
@@ -560,7 +562,7 @@ function optionsFor(w, kind, cat) {
   const picks = [{ x: w, status: 'right' }];
   if (syn) picks.push({ x: syn, status: 'half' });
   for (const x of [...samePos, ...others]) { if (picks.length >= 4) break; if (!picks.some(p => p.x === x)) picks.push({ x, status: 'wrong' }); }
-  return shuffle(picks).map(({ x, status }) => ({ label: x.word, status, owner: x, who: `means: ${defOf(x)}` }));
+  return shuffle(picks).map(({ x, status }) => ({ label: x.word, status, owner: x, who: `means: ${esc(defOf(x))}` }));
 }
 
 /* ---------- question screens ---------- */
@@ -610,7 +612,7 @@ function answerMC(c, opts, pick) {
     const o = opts[i];
     b.disabled = true;
     const who = b.querySelector('.who');
-    who.hidden = false; who.textContent = o.who;
+    who.hidden = false; who.innerHTML = o.who;   // built from escaped text
     if (o.status === 'wrong' && i !== pick) { b.classList.add('dim'); return; }
     b.classList.add(o.status === 'wrong' ? 'bad' : o.status);
     b.querySelector('.k').textContent = o.status === 'right' ? '✓' : o.status === 'half' ? '½' : '✗';
