@@ -98,7 +98,9 @@ header.top{display:flex; align-items:center; gap:10px; margin-bottom:20px}
 .hint{color:var(--muted); font-size:15px; margin:0 0 8px}
 .opts{display:grid; gap:10px; margin-top:20px}
 .opt{display:flex; align-items:flex-start; gap:12px; text-align:left; width:100%; padding:15px 16px; border-radius:16px; border:2px solid var(--line); border-bottom-width:4px; background:var(--card); font-size:17px; line-height:1.4; transition:transform .1s, border-color .15s}
-.opt:not(:disabled):hover{border-color:var(--sage)}
+/* hover only with a real mouse: on phones a tap leaves :hover stuck on whatever lands under the finger.
+   Neutral colour so it never looks like a ✓ hint */
+@media (hover:hover) and (pointer:fine){ .opt:not(:disabled):hover{border-color:var(--muted)} }
 .opt:not(:disabled):active{transform:translateY(2px)}
 .opt .k{flex:none; width:28px; height:28px; border-radius:9px; display:grid; place-items:center; font-size:14px; font-weight:800; background:var(--bg2); color:var(--muted)}
 .opt .who{display:block; font-size:14px; font-weight:700; margin-top:4px}
