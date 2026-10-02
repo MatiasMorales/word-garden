@@ -331,6 +331,12 @@ let S;
 try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
 if (!S) S = fresh();
 S.settings = Object.assign(fresh().settings, S.settings);
+// duplicate words that were merged: carry their progress over to the entry that was kept
+for (const [from, to] of Object.entries(DATA.merged || {})) {
+  const old = S.progress[from];
+  if (old && (!S.progress[to] || old.box > S.progress[to].box)) S.progress[to] = old;
+  delete S.progress[from];
+}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
 const P = w => (S.progress[w.id] ||= { box: 0, due: 0, seen: 0, right: 0, wrong: 0, last: null });
 const isDue = w => P(w).box > 0 && P(w).due <= today();

@@ -71,6 +71,9 @@ EN_NOTES = {                       # '' drops a note that adds nothing in Englis
     'apaciguar': 'to pacify', 'Falta energía': 'lacking energy', 'Weaknesses': 'a minor weakness',
     'Gaucherio': '', 'Lamentar': 'to regret',
 }
+# Corrections agreed with the players (2026-10-02)
+POS_FIX = {'chide': 'v'}
+MERGED = {'deride': 'deride/derisive', 'venerate': 'venerate/veneration'}   # duplicate row -> entry kept
 missing = set()
 
 
@@ -133,6 +136,10 @@ if not SRC.exists():
     prev = json.loads(old[start:old.index(';\n', start)])
     cats, words = prev['cats'], prev['words']
 
+for entry in words:
+    entry['p'] = POS_FIX.get(entry['w'], entry['p'])
+words = [e for e in words if e['w'] not in MERGED]
+
 defs = json.loads((HERE / 'defs.json').read_text(encoding='utf8'))
 for entry in words:
     entry.pop('d', None)
@@ -146,7 +153,7 @@ for c in cats:
         c['d'] = gdefs[c['n']]
 undefined += [c['n'] for c in cats if 'd' not in c]
 
-data = json.dumps({'cats': cats, 'words': words}, ensure_ascii=False, separators=(',', ':'))
+data = json.dumps({'cats': cats, 'words': words, 'merged': MERGED}, ensure_ascii=False, separators=(',', ':'))
 html = (HERE / 'template.html').read_text(encoding='utf8').replace('__DATA__', data)
 (HERE / 'index.html').write_text(html, encoding='utf8')
 print(f'{len(words)} words in {len(cats)} groups -> index.html')
