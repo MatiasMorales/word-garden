@@ -107,6 +107,7 @@ header.top{display:flex; align-items:center; gap:10px; margin-bottom:20px}
 .opt .who b{font-weight:800; color:var(--ink)}
 .opt .who .wl{display:block; margin-top:6px}
 .opt .who .wl:first-child{margin-top:0}
+.opt .who .gd{display:block; font-style:italic; margin-bottom:6px}
 .opt .who .wd{display:block; font-weight:600; padding-left:10px}
 .opt:disabled{cursor:default}
 .opt.dim{opacity:.72}
@@ -286,11 +287,12 @@ const today = () => { const d = new Date(); return Math.floor((d - d.getTimezone
 const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
 
 /* ---------- words ---------- */
-const CATS = DATA.cats.map((c, i) => ({ i, name: c.n, sheet: c.s }));
+const CATS = DATA.cats.map((c, i) => ({ i, name: c.n, sheet: c.s, def: c.d || '' }));
 const W = DATA.words.map(x => ({ id: x.w.toLowerCase(), word: x.w, pos: x.p, ex: x.e, note: x.t || '', def: x.d || '', cats: x.c, sheet: CATS[x.c[0]].sheet }));
 const byCat = CATS.map(c => W.filter(w => w.cats.includes(c.i)));
 const hue = ci => HUES[ci % HUES.length];
 const meaningOf = w => w.cats.map(ci => CATS[ci].name).join('  ·  ');   // the word's group(s)
+const groupsOf = w => w.cats.map(ci => `<b>${esc(CATS[ci].name)}</b>${CATS[ci].def ? ` (${esc(CATS[ci].def)})` : ''}`).join(' · ');
 const defOf = w => w.def || meaningOf(w);                                 // the word's own definition
 const sibs = w => W.filter(x => x !== w && x.cats.some(ci => w.cats.includes(ci)));
 const shareCat = (a, b) => a.cats.some(ci => b.cats.includes(ci));
@@ -446,7 +448,7 @@ function renderBeds() {
 function wordItem(w) {
   return `<div class="list-item"><div class="row"><b style="font-size:17px">${esc(w.word)}</b><span class="muted">${esc(w.pos)}</span>
       <div class="spacer"></div><span class="stage">${PLANTS[P(w).box]} ${STAGES[P(w).box]}</span></div>
-    ${w.def ? `<div>${esc(w.def)}</div>` : ''}<div class="muted" style="font-size:14px">Group: <b>${esc(meaningOf(w))}</b></div>
+    ${w.def ? `<div>${esc(w.def)}</div>` : ''}<div class="muted" style="font-size:14px">Group: ${groupsOf(w)}</div>
     ${w.ex ? `<div class="ex">${exampleHTML(w)}</div>` : ''}${w.note ? `<div class="muted">📝 ${esc(w.note)}</div>` : ''}</div>`;
 }
 function renderResults(q) {
@@ -474,7 +476,7 @@ function helpModal() {
 function peekModal(ci) {
   const c = CATS[ci];
   modal(`<span class="tag tint" style="--h:${hue(ci)}">${SHEETS[c.sheet]}</span>
-    <h2 style="margin:8px 0 4px">${esc(c.name)}</h2>
+    <h2 style="margin:8px 0 4px">${esc(c.name)}</h2>${c.def ? `<p class="muted" style="margin:0 0 6px">${esc(c.def)}</p>` : ''}
     ${byCat[ci].map(wordItem).join('')}`);
 }
 
@@ -542,6 +544,7 @@ function startSession() {
 
 /* ---------- options ----------
    Each option is right, half (close but not exact) or wrong. */
+const groupDef = c => c.def ? `<span class="gd">${esc(c.name)}: ${esc(c.def)}</span>` : '';
 const defLine = x => `<b>${esc(x.word)}</b>: ${esc(defOf(x))}`;
 const defList = (label, xs) => xs.length ? `<span class="wl">${label}:</span>${xs.map(x => `<span class="wd">${defLine(x)}</span>`).join('')}` : '';
 function optionsFor(w, kind, cat) {
@@ -552,8 +555,8 @@ function optionsFor(w, kind, cat) {
     return shuffle([{ c: right, status: 'right' }, { c: same, status: 'half' }, ...other.map(c => ({ c, status: 'wrong' }))])
       .map(({ c, status }) => ({ label: c.name, status, cat: c, h: hue(c.i),
         who: status === 'right'
-          ? `${defLine(w)}${defList('Same group', sibs(w).filter(x => x.cats.includes(c.i)).slice(0, 5)) || '<br>Same group: only this word'}`
-          : defList('Words here', shuffle(byCat[c.i].slice()).slice(0, 3)) }));
+          ? `${groupDef(c)}${defLine(w)}${defList('Same group', sibs(w).filter(x => x.cats.includes(c.i)).slice(0, 5)) || '<br>Same group: only this word'}`
+          : groupDef(c) + defList('Words here', shuffle(byCat[c.i].slice()).slice(0, 3)) }));
   }
   if (kind === 'word') {
     const pool = W.filter(x => x !== w && !shareCat(x, w));
@@ -702,7 +705,7 @@ function result(c, status, info = {}) {
   const bloomed = after === 5 && before < 5;
   const same = sibs(w).map(x => x.word);
   const answer = `<b>${esc(w.word)}</b> <span class="muted">(${esc(w.pos)})</span> means <b>${esc(defOf(w))}</b>
-    ${w.def ? `<div class="muted" style="font-size:14px">Group: <b>${esc(meaningOf(w))}</b></div>` : ''}
+    ${w.def ? `<div class="muted" style="font-size:14px">Group: ${groupsOf(w)}</div>` : ''}
     ${w.ex ? `<div class="ex">${exampleHTML(w)}</div>` : ''}${w.note ? `<div class="muted">📝 ${esc(w.note)}</div>` : ''}
     ${same.length ? `<div class="muted" style="font-size:14px;margin-top:4px">Same meaning: ${esc(same.slice(0, 6).join(', '))}${same.length > 6 ? ` +${same.length - 6} more` : ''}</div>` : ''}`;
   const growLine = before === 0 && status !== 'right'

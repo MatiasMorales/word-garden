@@ -3,7 +3,7 @@
 
 Usage:  python3 build.py [path/to/GRE.xlsx-folder]
 
-Word definitions live in defs.json ({"word": "definition"}), edited by hand.
+Word definitions live in defs.json and group definitions in groups.json ({"word": "definition"}), edited by hand.
 If the spreadsheet export isn't there, the word list already inside index.html is
 reused, so definition edits can still be rebuilt.
 
@@ -139,12 +139,18 @@ for entry in words:
     if defs.get(entry['w']):
         entry['d'] = defs[entry['w']]
 undefined = [e['w'] for e in words if 'd' not in e]
+gdefs = json.loads((HERE / 'groups.json').read_text(encoding='utf8'))
+for c in cats:
+    c.pop('d', None)
+    if gdefs.get(c['n']):
+        c['d'] = gdefs[c['n']]
+undefined += [c['n'] for c in cats if 'd' not in c]
 
 data = json.dumps({'cats': cats, 'words': words}, ensure_ascii=False, separators=(',', ':'))
 html = (HERE / 'template.html').read_text(encoding='utf8').replace('__DATA__', data)
 (HERE / 'index.html').write_text(html, encoding='utf8')
 print(f'{len(words)} words in {len(cats)} groups -> index.html')
 if undefined:
-    print(f'⚠️  {len(undefined)} words have no definition in defs.json:', ', '.join(undefined[:20]))
+    print(f'⚠️  {len(undefined)} words/groups have no definition in defs.json/groups.json:', ', '.join(undefined[:20]))
 if missing:
     print('⚠️  Add English names to EN_GROUPS for:', ', '.join(sorted(missing)))
