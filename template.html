@@ -105,6 +105,9 @@ header.top{display:flex; align-items:center; gap:10px; margin-bottom:20px}
 .opt .k{flex:none; width:28px; height:28px; border-radius:9px; display:grid; place-items:center; font-size:14px; font-weight:800; background:var(--bg2); color:var(--muted)}
 .opt .who{display:block; font-size:14px; font-weight:700; margin-top:4px}
 .opt .who b{font-weight:800; color:var(--ink)}
+.opt .who .wl{display:block; margin-top:6px}
+.opt .who .wl:first-child{margin-top:0}
+.opt .who .wd{display:block; font-weight:600; padding-left:10px}
 .opt:disabled{cursor:default}
 .opt.dim{opacity:.72}
 .opt.dim .who{color:var(--muted); font-weight:600}
@@ -539,6 +542,8 @@ function startSession() {
 
 /* ---------- options ----------
    Each option is right, half (close but not exact) or wrong. */
+const defLine = x => `<b>${esc(x.word)}</b>: ${esc(defOf(x))}`;
+const defList = (label, xs) => xs.length ? `<span class="wl">${label}:</span>${xs.map(x => `<span class="wd">${defLine(x)}</span>`).join('')}` : '';
 function optionsFor(w, kind, cat) {
   if (kind === 'meaning') {
     const right = CATS[cat ?? rnd(w.cats)];
@@ -547,8 +552,8 @@ function optionsFor(w, kind, cat) {
     return shuffle([{ c: right, status: 'right' }, { c: same, status: 'half' }, ...other.map(c => ({ c, status: 'wrong' }))])
       .map(({ c, status }) => ({ label: c.name, status, cat: c, h: hue(c.i),
         who: status === 'right'
-          ? [w, ...shuffle(sibs(w).filter(x => x.cats.includes(c.i))).slice(0, 2)].map(x => `<b>${esc(x.word)}</b>: ${esc(defOf(x))}`).join('<br>')
-          : shuffle(byCat[c.i].slice()).slice(0, 2).map(x => `<b>${esc(x.word)}</b>: ${esc(defOf(x))}`).join('<br>') }));
+          ? `${defLine(w)}${defList('Same group', sibs(w).filter(x => x.cats.includes(c.i)).slice(0, 5)) || '<br>Same group: only this word'}`
+          : defList('Words here', shuffle(byCat[c.i].slice()).slice(0, 3)) }));
   }
   if (kind === 'word') {
     const pool = W.filter(x => x !== w && !shareCat(x, w));
