@@ -281,10 +281,11 @@ const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().repla
 
 /* ---------- words ---------- */
 const CATS = DATA.cats.map((c, i) => ({ i, name: c.n, sheet: c.s }));
-const W = DATA.words.map(x => ({ id: x.w.toLowerCase(), word: x.w, pos: x.p, ex: x.e, note: x.t || '', cats: x.c, sheet: CATS[x.c[0]].sheet }));
+const W = DATA.words.map(x => ({ id: x.w.toLowerCase(), word: x.w, pos: x.p, ex: x.e, note: x.t || '', def: x.d || '', cats: x.c, sheet: CATS[x.c[0]].sheet }));
 const byCat = CATS.map(c => W.filter(w => w.cats.includes(c.i)));
 const hue = ci => HUES[ci % HUES.length];
-const meaningOf = w => w.cats.map(ci => CATS[ci].name).join('  ·  ');
+const meaningOf = w => w.cats.map(ci => CATS[ci].name).join('  ·  ');   // the word's group(s)
+const defOf = w => w.def || meaningOf(w);                                 // the word's own definition
 const sibs = w => W.filter(x => x !== w && x.cats.some(ci => w.cats.includes(ci)));
 const shareCat = (a, b) => a.cats.some(ci => b.cats.includes(ci));
 const pos1 = w => (w.pos || '').split('/')[0].trim();
@@ -439,13 +440,13 @@ function renderBeds() {
 function wordItem(w) {
   return `<div class="list-item"><div class="row"><b style="font-size:17px">${esc(w.word)}</b><span class="muted">${esc(w.pos)}</span>
       <div class="spacer"></div><span class="stage">${PLANTS[P(w).box]} ${STAGES[P(w).box]}</span></div>
-    <div><b>${esc(meaningOf(w))}</b></div>
+    ${w.def ? `<div>${esc(w.def)}</div>` : ''}<div class="muted" style="font-size:14px">Group: <b>${esc(meaningOf(w))}</b></div>
     ${w.ex ? `<div class="ex">${exampleHTML(w)}</div>` : ''}${w.note ? `<div class="muted">📝 ${esc(w.note)}</div>` : ''}</div>`;
 }
 function renderResults(q) {
   q = norm(q);
   if (q.length < 2) return $('#results').innerHTML = '';
-  const hits = W.filter(w => norm(w.word).includes(q) || norm(meaningOf(w)).includes(q))
+  const hits = W.filter(w => norm(w.word).includes(q) || norm(meaningOf(w)).includes(q) || norm(w.def).includes(q))
     .sort((a, b) => norm(b.word).startsWith(q) - norm(a.word).startsWith(q)).slice(0, 20);
   $('#results').innerHTML = `<div class="card" style="padding:4px 20px;margin-top:10px">${hits.length ? hits.map(wordItem).join('') : '<p class="muted">No words found.</p>'}</div>`;
 }
@@ -550,7 +551,7 @@ function optionsFor(w, kind, cat) {
     const same = rnd(pool.filter(x => x.sheet === w.sheet));
     const other = shuffle(pool.filter(x => x.sheet !== w.sheet)).slice(0, 2);
     return shuffle([{ x: w, status: 'right' }, { x: same, status: 'half' }, ...other.map(x => ({ x, status: 'wrong' }))])
-      .map(({ x, status }) => ({ label: x.word, status, owner: x, who: `means: ${meaningOf(x)}` }));
+      .map(({ x, status }) => ({ label: x.word, status, owner: x, who: `means: ${defOf(x)}` }));
   }
   // blank: one synonym from the same group is half right
   const syn = shuffle(sibs(w).filter(x => norm(x.word) !== norm(w.word)))[0];
@@ -559,7 +560,7 @@ function optionsFor(w, kind, cat) {
   const picks = [{ x: w, status: 'right' }];
   if (syn) picks.push({ x: syn, status: 'half' });
   for (const x of [...samePos, ...others]) { if (picks.length >= 4) break; if (!picks.some(p => p.x === x)) picks.push({ x, status: 'wrong' }); }
-  return shuffle(picks).map(({ x, status }) => ({ label: x.word, status, owner: x, who: `means: ${meaningOf(x)}` }));
+  return shuffle(picks).map(({ x, status }) => ({ label: x.word, status, owner: x, who: `means: ${defOf(x)}` }));
 }
 
 /* ---------- question screens ---------- */
@@ -591,10 +592,10 @@ function showQuestion() {
   const opts = optionsFor(w, c.kind, c.cat);
   const right = opts.find(o => o.status === 'right');
   const prompt = {
-    meaning: `<h1 class="prompt">What does <b>${esc(w.word)}</b> mean?</h1>`,
-    word:    `<h1 class="prompt">Which word means <b>${esc(right.label === w.word ? meaningOf(w) : right.label)}</b>?</h1>`,
-    blank:   `<h1 class="prompt">Which word fills the blank?</h1>${sentenceHTML(w)}`,
-  }[c.kind];
+    meaning: () => `<h1 class="prompt">What does <b>${esc(w.word)}</b> mean?</h1>`,
+    word:    () => `<h1 class="prompt">Which word means <b>${esc(right.label === w.word ? meaningOf(w) : right.label)}</b>?</h1>`,
+    blank:   () => `<h1 class="prompt">Which word fills the blank?</h1>${sentenceHTML(w)}`,
+  }[c.kind]();
   shell(`${topHint(c)}${prompt}
     <div class="opts">${opts.map((o, i) => `<button class="opt" data-i="${i}">
       <span class="k">${i + 1}</span><span>${o.h != null ? `<span class="tag tint" style="--h:${o.h}">${esc(o.label)}</span>` : esc(o.label)}<span class="who" hidden></span></span>
@@ -691,7 +692,8 @@ function result(c, status, info = {}) {
   const w = c.w, o = info.chosen && (info.chosen.owner || info.chosen.cat);
   const bloomed = after === 5 && before < 5;
   const same = sibs(w).map(x => x.word);
-  const answer = `<b>${esc(w.word)}</b> <span class="muted">(${esc(w.pos)})</span> means <b>${esc(meaningOf(w))}</b>
+  const answer = `<b>${esc(w.word)}</b> <span class="muted">(${esc(w.pos)})</span> means <b>${esc(defOf(w))}</b>
+    ${w.def ? `<div class="muted" style="font-size:14px">Group: <b>${esc(meaningOf(w))}</b></div>` : ''}
     ${w.ex ? `<div class="ex">${exampleHTML(w)}</div>` : ''}${w.note ? `<div class="muted">📝 ${esc(w.note)}</div>` : ''}
     ${same.length ? `<div class="muted" style="font-size:14px;margin-top:4px">Same meaning: ${esc(same.slice(0, 6).join(', '))}${same.length > 6 ? ` +${same.length - 6} more` : ''}</div>` : ''}`;
   const growLine = before === 0 && status !== 'right'
@@ -705,25 +707,25 @@ function result(c, status, info = {}) {
     const h = (info.halfOpts || [])[0];
     if (info.typo) extra = `Small typo: it's spelled <b>${esc(w.blank ? w.blank.used : w.word)}</b>.`;
     else if (h && c.kind === 'blank')
-      extra = `½ <b>There was a half-right option:</b> <b>${esc(h.owner.word)}</b> also means ${esc(meaningOf(h.owner))}, so it's a synonym. The sentence uses <b>${esc(w.word)}</b>.`;
+      extra = `½ <b>There was a half-right option:</b> <b>${esc(h.owner.word)}</b> is a synonym (${esc(defOf(h.owner))}). The sentence uses <b>${esc(w.word)}</b>.`;
     else if (h && c.kind === 'meaning')
       extra = `½ <b>There was a half-right option:</b> “${esc(h.label)}” has the right tone (${tone(w)}), but it's a different meaning.`;
     else if (h && c.kind === 'word')
-      extra = `½ <b>There was a half-right option:</b> <b>${esc(h.label)}</b> is also a ${tone(w)} word, but it means ${esc(meaningOf(h.owner))}.`;
+      extra = `½ <b>There was a half-right option:</b> <b>${esc(h.label)}</b> is also a ${tone(w)} word, but it means ${esc(defOf(h.owner))}.`;
     if (bloomed) { sfx.done(); petals(24); } else sfx.right();
   } else if (status === 'half') {
     head = '½ Half right';
     if (info.hinted) extra = `You got it, but with letter hints. Next time try without!`;
-    else if (info.typedSibling) extra = `<b>${esc(info.typedSibling.word)}</b> is a synonym (it also means ${esc(meaningOf(info.typedSibling))}), but the sentence uses <b>${esc(w.word)}</b>.`;
-    else if (c.kind === 'blank') extra = `<b>${esc(o.word)}</b> is a synonym: it also means ${esc(meaningOf(o))}. Close! But the sentence uses <b>${esc(w.word)}</b>.`;
+    else if (info.typedSibling) extra = `<b>${esc(info.typedSibling.word)}</b> is a synonym (${esc(defOf(info.typedSibling))}), but the sentence uses <b>${esc(w.word)}</b>.`;
+    else if (c.kind === 'blank') extra = `<b>${esc(o.word)}</b> is a synonym (${esc(defOf(o))}). Close! But the sentence uses <b>${esc(w.word)}</b>.`;
     else if (c.kind === 'meaning') extra = `“${esc(o.name)}” has the right tone (${tone(w)}), but it's a different meaning.`;
-    else extra = `<b>${esc(o.word)}</b> is also a ${tone(w)} word, but it means ${esc(meaningOf(o))}.`;
+    else extra = `<b>${esc(o.word)}</b> is also a ${tone(w)} word, but it means ${esc(defOf(o))}.`;
     sfx.half();
   } else {
     head = '✗ Not quite';
     if (info.typed) extra = `You wrote “${esc(info.typed)}”.`;
     else if (o && c.kind === 'meaning') extra = `You picked “${esc(o.name)}”, which is a ${o.sheet === 'P' ? 'positive' : 'negative'} meaning. <b>${esc(w.word)}</b> is ${tone(w)}.`;
-    else if (o) extra = `You picked <b>${esc(o.word)}</b>, which means ${esc(meaningOf(o))}.`;
+    else if (o) extra = `You picked <b>${esc(o.word)}</b>, which means ${esc(defOf(o))}.`;
     sfx.wrong();
   }
   const again = status !== 'right' && !c.retry ? `<div class="muted" style="font-size:14px;margin-top:8px">This word will come back in a few questions.</div>` : '';
@@ -763,7 +765,7 @@ function finish() {
     ${Q.grown.size ? `<div class="muted" style="text-align:left;font-weight:800;font-size:14px">What grew today 🌱</div>
       <div class="review">${[...Q.grown].map(([id, [a, b]]) => `<div>${PLANTS[a]} → ${PLANTS[b]} &nbsp;<b>${esc(W.find(w => w.id === id).word)}</b></div>`).join('')}</div>` : ''}
     ${missed.length ? `<div class="muted" style="text-align:left;font-weight:800;font-size:14px">Words to look at again</div>
-      <div class="review">${missed.map(w => `<div><b>${esc(w.word)}</b> = ${esc(meaningOf(w))}${w.ex ? `<div class="ex">${exampleHTML(w)}</div>` : ''}</div>`).join('')}</div>` : ''}
+      <div class="review">${missed.map(w => `<div><b>${esc(w.word)}</b> = ${esc(defOf(w))}${w.ex ? `<div class="ex">${exampleHTML(w)}</div>` : ''}</div>`).join('')}</div>` : ''}
     ${note ? `<div class="note">${esc(note)}<div class="sig">♥</div></div>` : ''}
     <div class="row" style="justify-content:center;flex-wrap:wrap">
       <button class="btn ghost" id="home">Home</button>

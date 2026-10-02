@@ -3,6 +3,10 @@
 
 Usage:  python3 build.py [path/to/GRE.xlsx-folder]
 
+Word definitions live in defs.json ({"word": "definition"}), edited by hand.
+If the spreadsheet export isn't there, the word list already inside index.html is
+reused, so definition edits can still be rebuilt.
+
 Each sheet tab (Positivas.html, Negativas.html) is a table where a row with only
 column A filled is a group title (its Spanish meaning), followed by word rows:
   A = word, B = part of speech, C = example sentence, D = optional note.
@@ -95,7 +99,7 @@ class Table(HTMLParser):
 
 
 cats, words, index = [], [], {}
-for name, code in SHEETS:
+for name, code in (SHEETS if SRC.exists() else []):
     t = Table()
     t.feed((SRC / f'{name}.html').read_text(encoding='utf8'))
     cur = None
@@ -122,9 +126,25 @@ for name, code in SHEETS:
             entry['t'] = d
         words.append(entry)
 
+if not SRC.exists():
+    print(f'{SRC} not found, reusing the word list in index.html')
+    old = (HERE / 'index.html').read_text(encoding='utf8')
+    start = old.index('const DATA = ') + len('const DATA = ')
+    prev = json.loads(old[start:old.index(';\n', start)])
+    cats, words = prev['cats'], prev['words']
+
+defs = json.loads((HERE / 'defs.json').read_text(encoding='utf8'))
+for entry in words:
+    entry.pop('d', None)
+    if defs.get(entry['w']):
+        entry['d'] = defs[entry['w']]
+undefined = [e['w'] for e in words if 'd' not in e]
+
 data = json.dumps({'cats': cats, 'words': words}, ensure_ascii=False, separators=(',', ':'))
 html = (HERE / 'template.html').read_text(encoding='utf8').replace('__DATA__', data)
 (HERE / 'index.html').write_text(html, encoding='utf8')
 print(f'{len(words)} words in {len(cats)} groups -> index.html')
+if undefined:
+    print(f'⚠️  {len(undefined)} words have no definition in defs.json:', ', '.join(undefined[:20]))
 if missing:
     print('⚠️  Add English names to EN_GROUPS for:', ', '.join(sorted(missing)))
