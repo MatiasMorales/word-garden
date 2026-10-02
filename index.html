@@ -103,7 +103,8 @@ header.top{display:flex; align-items:center; gap:10px; margin-bottom:20px}
 .opt .k{flex:none; width:28px; height:28px; border-radius:9px; display:grid; place-items:center; font-size:14px; font-weight:800; background:var(--bg2); color:var(--muted)}
 .opt .who{display:block; font-size:14px; font-weight:700; margin-top:4px}
 .opt:disabled{cursor:default}
-.opt.dim{opacity:.5}
+.opt.dim{opacity:.72}
+.opt.dim .who{color:var(--muted); font-weight:600}
 .opt.right{background:var(--good-bg); border-color:var(--good)}
 .opt.right .k{background:var(--good); color:var(--on)}
 .opt.right .who{color:var(--good)}
@@ -374,7 +375,8 @@ function petals(n = 30) {
 function renderHome() {
   Q = null;
   const due = W.filter(isDue).length, unseen = W.filter(w => P(w).box === 0).length;
-  const n = Math.min(DUE_CAP, due) + Math.min(unseen, S.settings.newPer) || 10;
+  NEXT = buildQueue();
+  const n = NEXT.length;
   const bloom = W.filter(w => P(w).box === 5).length, strong = W.filter(w => P(w).box >= LEARNED).length;
   const planted = W.length - unseen;
   $('#app').innerHTML = `<div class="enter">
@@ -470,12 +472,18 @@ function peekModal(ci) {
 }
 
 /* ---------- building a round ---------- */
-let Q = null;
-function pickNew(k) {           // new words come from ~3 groups at a time, alternating between them
-  const open = CAT_ORDER.filter(ci => byCat[ci].some(w => P(w).box === 0)).slice(0, 3);
-  const lists = open.map(ci => shuffle(byCat[ci].filter(w => P(w).box === 0))), out = new Set();
-  while (out.size < k && lists.some(l => l.length)) lists.forEach(l => { if (l.length && out.size < k) out.add(l.shift()); });
-  return [...out];
+let Q = null, NEXT = null;   // NEXT: the round shown on the home screen
+function pickNew(k, used) {     // new words come one per group, each from a different group (interleaving)
+  const open = shuffle(CAT_ORDER.filter(ci => !used.has(ci) && byCat[ci].some(w => P(w).box === 0)));
+  const out = [];
+  for (const ci of open) {
+    if (out.length >= k) break;
+    const w = rnd(byCat[ci].filter(x => P(x).box === 0 && !x.cats.some(c => used.has(c))) );
+    if (!w) continue;
+    out.push({ w, kind: 'meaning', cat: ci });
+    w.cats.forEach(c => used.add(c));
+  }
+  return out;
 }
 function pickKind(w) {
   const b = P(w).box;
@@ -483,29 +491,53 @@ function pickKind(w) {
   if (!w.blank) pool = pool.filter(k => k !== 'blank' && k !== 'type');
   return rnd(pool.length ? pool : ['meaning', 'word']);
 }
-function buildQueue() {
-  const due = shuffle(W.filter(isDue)).sort((a, b) => P(a).box - P(b).box).slice(0, DUE_CAP);
-  const unseen = pickNew(S.settings.newPer);
-  const q = [];
-  while (due.length || unseen.length) {
-    if (unseen.length) q.push({ w: unseen.shift(), kind: 'meaning' });
-    if (due.length) { const w = due.shift(); q.push({ w, kind: pickKind(w) }); }
+// A round never asks two questions with the same answer: a meaning/word question's answer is its
+// group, so each group is the answer at most once. Words that would clash wait for a later round.
+function plan(w, used, extra = {}) {
+  const kinds = [pickKind(w), ...shuffle(['blank', 'type', 'meaning', 'word'])]
+    .filter((k, i, a) => a.indexOf(k) === i && (w.blank || (k !== 'blank' && k !== 'type')));
+  for (const kind of kinds) {
+    if (kind === 'blank' || kind === 'type') return { w, kind, ...extra };
+    const free = w.cats.filter(ci => !used.has(ci));
+    if (free.length === w.cats.length) { w.cats.forEach(ci => used.add(ci)); return { w, kind, cat: rnd(free), ...extra }; }
   }
+  return null;
+}
+// spread the round out so neighbouring questions come from different groups
+function spread(items) {
+  const left = shuffle(items.slice()), out = [];
+  while (left.length) {
+    const recent = out.slice(-3).map(c => c.w);
+    let i = left.findIndex(c => !recent.some(r => shareCat(r, c.w)));
+    out.push(left.splice(i < 0 ? 0 : i, 1)[0]);
+  }
+  return out;
+}
+function buildQueue() {
+  const used = new Set(), q = [];
+  for (const w of shuffle(W.filter(isDue)).sort((a, b) => P(a).box - P(b).box)) {
+    if (q.length >= DUE_CAP) break;
+    const c = plan(w, used); if (c) q.push(c);
+  }
+  q.push(...pickNew(S.settings.newPer, used));
   if (!q.length)
-    shuffle(W.filter(w => P(w).box > 0)).sort((a, b) => P(a).box - P(b).box).slice(0, 10)
-      .forEach(w => q.push({ w, kind: pickKind(w), practice: true }));
-  return q;
+    for (const w of shuffle(W.filter(w => P(w).box > 0)).sort((a, b) => P(a).box - P(b).box)) {
+      if (q.length >= 10) break;
+      const c = plan(w, used, { practice: true }); if (c) q.push(c);
+    }
+  return spread(q);
 }
 function startSession() {
-  Q = { queue: buildQueue(), i: 0, combo: 0, right: 0, half: 0, answered: 0, missed: new Map(), grown: new Map(), locked: false };
+  Q = { queue: NEXT || buildQueue(), i: 0, combo: 0, right: 0, half: 0, answered: 0, missed: new Map(), grown: new Map(), locked: false };
+  NEXT = null;
   showQuestion();
 }
 
 /* ---------- options ----------
    Each option is right, half (close but not exact) or wrong. */
-function optionsFor(w, kind) {
+function optionsFor(w, kind, cat) {
   if (kind === 'meaning') {
-    const right = CATS[rnd(w.cats)];
+    const right = CATS[cat ?? rnd(w.cats)];
     const same = rnd(CATS.filter(c => c.sheet === w.sheet && !w.cats.includes(c.i)));
     const other = shuffle(CATS.filter(c => c.sheet !== w.sheet)).slice(0, 2);
     return shuffle([{ c: right, status: 'right' }, { c: same, status: 'half' }, ...other.map(c => ({ c, status: 'wrong' }))])
@@ -556,7 +588,7 @@ function showQuestion() {
   if (Q.i >= Q.queue.length) return finish();
   const c = Q.queue[Q.i], w = c.w;
   if (c.kind === 'type') return typeQuestion(c);
-  const opts = optionsFor(w, c.kind);
+  const opts = optionsFor(w, c.kind, c.cat);
   const right = opts.find(o => o.status === 'right');
   const prompt = {
     meaning: `<h1 class="prompt">What does <b>${esc(w.word)}</b> mean?</h1>`,
@@ -576,11 +608,11 @@ function answerMC(c, opts, pick) {
   document.querySelectorAll('.opt').forEach((b, i) => {
     const o = opts[i];
     b.disabled = true;
+    const who = b.querySelector('.who');
+    who.hidden = false; who.textContent = o.who;
     if (o.status === 'wrong' && i !== pick) { b.classList.add('dim'); return; }
     b.classList.add(o.status === 'wrong' ? 'bad' : o.status);
     b.querySelector('.k').textContent = o.status === 'right' ? '✓' : o.status === 'half' ? '½' : '✗';
-    const who = b.querySelector('.who');
-    who.hidden = false; who.textContent = o.who;
     if (i === pick) {
       who.insertAdjacentHTML('beforebegin', '<span class="yours">← your answer</span>');
       if (o.status === 'wrong') b.classList.add('shake');
@@ -645,7 +677,7 @@ function grade(c, status) {
   if (status === 'right') { Q.right++; Q.combo++; } else { Q.combo = 0; Q.missed.set(w.id, w); }
   if (status === 'half') Q.half++;
   if (status !== 'right' && !c.retry)       // ask again a few questions later
-    Q.queue.splice(Math.min(Q.queue.length, Q.i + 3), 0, { w, kind: w.blank && c.kind !== 'meaning' ? 'blank' : 'meaning', retry: true });
+    Q.queue.splice(Math.min(Q.queue.length, Q.i + 3), 0, { w, kind: w.blank && c.kind !== 'meaning' ? 'blank' : 'meaning', cat: c.cat, retry: true });
   if (p.box > before && status === 'right') Q.grown.set(w.id, [Q.grown.has(w.id) ? Q.grown.get(w.id)[0] : before, p.box]);
   S.played = true;
   save();
